@@ -1,5 +1,5 @@
-// Werbeanalyse Backend Server
-// Installation: npm install express cors dotenv node-fetch
+// Werbeanalyse Backend Server MVP2
+// Installation: npm install express cors dotenv
 // Start: node server.js
 
 const express = require('express');
@@ -13,12 +13,71 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
+// Kategorie-spezifische Gewichtungen
+const CATEGORY_WEIGHTS = {
+    'Lebensmittel & Getränke': {
+        werte: 0.45,
+        emotional: 0.35,
+        aesthetik: 0.20
+    },
+    'Technologie & Elektronik': {
+        werte: 0.25,
+        emotional: 0.25,
+        aesthetik: 0.50
+    },
+    'Mode & Fashion': {
+        werte: 0.20,
+        emotional: 0.30,
+        aesthetik: 0.50
+    },
+    'Sport & Fitness': {
+        werte: 0.35,
+        emotional: 0.35,
+        aesthetik: 0.30
+    },
+    'Automotive': {
+        werte: 0.30,
+        emotional: 0.25,
+        aesthetik: 0.45
+    },
+    'Reisen & Tourismus': {
+        werte: 0.25,
+        emotional: 0.50,
+        aesthetik: 0.25
+    },
+    'Finanzen & Versicherungen': {
+        werte: 0.60,
+        emotional: 0.30,
+        aesthetik: 0.10
+    },
+    'Beauty & Kosmetik': {
+        werte: 0.25,
+        emotional: 0.30,
+        aesthetik: 0.45
+    },
+    'Haushalt & Wohnen': {
+        werte: 0.35,
+        emotional: 0.25,
+        aesthetik: 0.40
+    },
+    'Entertainment & Medien': {
+        werte: 0.15,
+        emotional: 0.60,
+        aesthetik: 0.25
+    }
+};
+
 // Health Check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', message: 'Backend läuft!' });
+    res.json({ status: 'ok', message: 'MVP2 Backend läuft!', version: '2.0' });
 });
 
-// Anthropic API Proxy - Werbungsanalyse
+// Get Category Weights
+app.get('/api/category-weights', (req, res) => {
+    res.json({ weights: CATEGORY_WEIGHTS });
+});
+
+// Anthropic API Proxy - Werbungsanalyse (Attribut-Profiling)
 app.post('/api/analyze', async (req, res) => {
     try {
         const { brand, category, ctr, description } = req.body;
@@ -36,9 +95,10 @@ app.post('/api/analyze', async (req, res) => {
             });
         }
 
-        const prompt = `Du musst mit einem validen JSON-Objekt antworten. KEINE zusätzlichen Texte, KEINE Erklärungen, KEINE Markdown-Formatierung.
+        const prompt = `Du bist ein Experte für Werbeanalyse und erstellst detaillierte Attribut-Profile für ein Matching-System.
 
-Analysiere diese Werbung und bewerte die wichtigsten Attribute auf einer Skala von -100 bis +100.
+WICHTIG: Dies ist KEINE Bewertung ob die Werbung gut oder schlecht ist! 
+Du misst nur die INTENSITÄT jedes Attributs auf einer Skala von 0-100.
 
 Werbung:
 Brand: ${brand || 'Unbekannt'}
@@ -46,27 +106,74 @@ Kategorie: ${category}
 CTR: ${ctr || 'N/A'}
 Beschreibung: ${description}
 
-Antworte ausschließlich mit diesem JSON-Format:
+Erstelle ein Attribut-Profil. Bewerte für JEDES Attribut:
+- 0 = Attribut ist gar nicht präsent
+- 50 = Attribut ist moderat präsent  
+- 100 = Attribut ist sehr dominant
+
+Antworte NUR mit diesem exakten JSON-Format (keine zusätzlichen Texte):
 {
-  "summary": "Kurze Analyse-Zusammenfassung in 1-2 Sätzen",
-  "top_attributes": ["attr1", "attr2", "attr3"],
-  "red_flags": ["attr1", "attr2"],
+  "summary": "Kurze neutrale Beschreibung der Werbung in 1-2 Sätzen",
+  "dominant_attributes": ["attr1", "attr2", "attr3", "attr4", "attr5"],
+  "weak_attributes": ["attr1", "attr2"],
+  "intensity": "niedrig|mittel|hoch",
   "attributes": {
     "werte": {
-      "nachhaltigkeit": {"score": 0, "type": "neutral", "reason": "kurz"},
-      "innovation": {"score": 70, "type": "strength", "reason": "kurz"},
-      "familie": {"score": 30, "type": "neutral", "reason": "kurz"}
+      "nachhaltigkeit": {"score": 0, "reasoning": "kurz"},
+      "familie": {"score": 0, "reasoning": "kurz"},
+      "individualitaet": {"score": 0, "reasoning": "kurz"},
+      "erfolg_leistung": {"score": 0, "reasoning": "kurz"},
+      "sicherheit": {"score": 0, "reasoning": "kurz"},
+      "freiheit": {"score": 0, "reasoning": "kurz"},
+      "tradition": {"score": 0, "reasoning": "kurz"},
+      "innovation": {"score": 0, "reasoning": "kurz"},
+      "gemeinschaft": {"score": 0, "reasoning": "kurz"},
+      "gesundheit": {"score": 0, "reasoning": "kurz"},
+      "authentizitaet": {"score": 0, "reasoning": "kurz"},
+      "luxus": {"score": 0, "reasoning": "kurz"},
+      "pragmatismus": {"score": 0, "reasoning": "kurz"},
+      "abenteuer": {"score": 0, "reasoning": "kurz"}
     },
     "emotional": {
-      "vertrauen": {"score": 50, "type": "neutral", "reason": "kurz"},
-      "freude": {"score": 80, "type": "strength", "reason": "kurz"}
+      "humor": {"score": 0, "reasoning": "kurz"},
+      "nostalgie": {"score": 0, "reasoning": "kurz"},
+      "inspiration": {"score": 0, "reasoning": "kurz"},
+      "vertrauen": {"score": 0, "reasoning": "kurz"},
+      "ueberraschung": {"score": 0, "reasoning": "kurz"},
+      "freude": {"score": 0, "reasoning": "kurz"},
+      "stolz": {"score": 0, "reasoning": "kurz"},
+      "neugier": {"score": 0, "reasoning": "kurz"},
+      "empathie": {"score": 0, "reasoning": "kurz"},
+      "aufregung": {"score": 0, "reasoning": "kurz"},
+      "entspannung": {"score": 0, "reasoning": "kurz"},
+      "rebellion": {"score": 0, "reasoning": "kurz"},
+      "dringlichkeit": {"score": 0, "reasoning": "kurz"},
+      "hoffnung": {"score": 0, "reasoning": "kurz"}
     },
     "aesthetik": {
-      "professionell": {"score": 60, "type": "strength", "reason": "kurz"},
-      "modern": {"score": 70, "type": "strength", "reason": "kurz"}
+      "minimalistisch": {"score": 0, "reasoning": "kurz"},
+      "luxurioes": {"score": 0, "reasoning": "kurz"},
+      "verspielt": {"score": 0, "reasoning": "kurz"},
+      "professionell": {"score": 0, "reasoning": "kurz"},
+      "natuerlich": {"score": 0, "reasoning": "kurz"},
+      "technologisch": {"score": 0, "reasoning": "kurz"},
+      "vintage": {"score": 0, "reasoning": "kurz"},
+      "urban": {"score": 0, "reasoning": "kurz"},
+      "rustikal": {"score": 0, "reasoning": "kurz"},
+      "elegant": {"score": 0, "reasoning": "kurz"},
+      "dynamisch": {"score": 0, "reasoning": "kurz"},
+      "ruhig": {"score": 0, "reasoning": "kurz"},
+      "kuenstlerisch": {"score": 0, "reasoning": "kurz"},
+      "dokumentarisch": {"score": 0, "reasoning": "kurz"}
     }
   }
-}`;
+}
+
+WICHTIG: 
+- dominant_attributes = Top 5 stärkste Attribute (höchste Scores)
+- weak_attributes = 2 schwächste Attribute die normalerweise erwartet würden
+- intensity = Gesamteindruck wie stark die Werbung kommuniziert (niedrig/mittel/hoch)
+- Sei objektiv und neutral - keine Bewertung ob gut/schlecht!`;
 
         console.log('📡 Sende Anfrage an Anthropic API...');
 
@@ -79,7 +186,7 @@ Antworte ausschließlich mit diesem JSON-Format:
             },
             body: JSON.stringify({
                 model: 'claude-sonnet-4-20250514',
-                max_tokens: 3000,
+                max_tokens: 4000,
                 messages: [{ role: 'user', content: prompt }]
             })
         });
@@ -162,8 +269,9 @@ app.post('/api/analyze-data', async (req, res) => {
                 category: ad.category,
                 ctr: ad.ctr,
                 summary: ad.analysis.summary,
-                red_flags: ad.analysis.red_flags,
-                top_attributes: ad.analysis.top_attributes
+                weak_attributes: ad.analysis.weak_attributes,
+                dominant_attributes: ad.analysis.dominant_attributes,
+                intensity: ad.analysis.intensity
             }))
         }, null, 2);
 
@@ -226,13 +334,15 @@ Gib eine strukturierte, detaillierte Analyse mit konkreten Zahlen, Trends und In
 app.listen(PORT, () => {
     console.log(`
 ╔════════════════════════════════════════╗
-║   🚀 Werbeanalyse Backend Server      ║
+║   🚀 Werbeanalyse Backend MVP2        ║
 ║                                        ║
 ║   Port: ${PORT}                          ║
 ║   Status: ✅ Läuft                     ║
+║   Version: 2.0 - Attribut-Profiling   ║
 ║                                        ║
 ║   Endpoints:                           ║
 ║   GET  /api/health                     ║
+║   GET  /api/category-weights           ║
 ║   POST /api/analyze                    ║
 ║   POST /api/analyze-data               ║
 ╚════════════════════════════════════════╝
