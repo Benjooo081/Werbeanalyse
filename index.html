@@ -288,6 +288,14 @@
 </div>
 
 <script>
+    // ========================================
+    // 🔧 KONFIGURATION - NUR HIER ÄNDERN!
+    // ========================================
+    // Ersetze 'http://localhost:3001' mit deiner Render.com URL
+    // Beispiel: 'https://werbeanalyse-backend-abc123.onrender.com'
+    const BACKEND_URL = 'https://werbeanalyse.onrender.com/api/analyze‘;
+    // ========================================
+
     // Debug logging
     function debugLog(message) {
         console.log('[DEBUG]', message);
@@ -484,7 +492,7 @@
                 // Backend API Call
                 debugLog('🔑 Verwende Backend API');
                 try {
-                    const backendUrl = 'http://localhost:3001/api/analyze';
+                    const backendUrl = `${BACKEND_URL}/api/analyze`;
                     debugLog(`📡 Sende Request zu: ${backendUrl}`);
                     
                     const response = await fetch(backendUrl, {
@@ -952,66 +960,36 @@ Antworte ausschließlich mit diesem JSON-Format:
                 debugLog('🔑 Verwende echten API Key für KI-Analyse');
                 
                 try {
-                    const dataContext = JSON.stringify({
-                        total_ads: ads.length,
-                        categories: [...new Set(ads.map(a => a.category))],
-                        all_ads: ads.map(ad => ({
-                            id: ad.id,
-                            brand: ad.brand,
-                            category: ad.category,
-                            ctr: ad.ctr,
-                            summary: ad.analysis.summary,
-                            red_flags: ad.analysis.red_flags,
-                            top_attributes: ad.analysis.top_attributes
-                        }))
-                    }, null, 2);
+                    const backendUrl = `${BACKEND_URL}/api/analyze-data`;
+                    debugLog(`📡 Sende Request zu: ${backendUrl}`);
 
-                    const prompt = `Du bist ein Datenanalyst für Werbedaten. Analysiere die folgenden Werbedaten und beantworte die Nutzeranfrage präzise und detailliert.
-
-Werbedaten:
-${dataContext}
-
-Nutzeranfrage: ${query}
-
-Gib eine strukturierte, detaillierte Analyse mit konkreten Zahlen, Trends und Insights.`;
-
-                    debugLog('📡 Sende KI-Analyse-Anfrage...');
-
-                    const apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
+                    const apiResponse = await fetch(backendUrl, {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
-                            'x-api-key': apiKey,
-                            'anthropic-version': '2023-06-01'
+                            'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            model: 'claude-sonnet-4-20250514',
-                            max_tokens: 4000,
-                            messages: [{role: 'user', content: prompt}]
+                            query: query,
+                            ads: ads
                         })
                     });
 
                     debugLog(`📡 Response Status: ${apiResponse.status}`);
 
                     if (!apiResponse.ok) {
-                        const errorText = await apiResponse.text();
-                        debugLog(`❌ API Error: ${errorText}`);
-                        throw new Error(`API Fehler (${apiResponse.status})`);
+                        const errorData = await apiResponse.json();
+                        debugLog(`❌ Backend Error: ${JSON.stringify(errorData)}`);
+                        throw new Error(errorData.error || 'Backend Error');
                     }
 
                     const data = await apiResponse.json();
 
-                    if (data.error) {
-                        throw new Error(data.error.message || 'API Error');
-                    }
-
-                    if (data.content && Array.isArray(data.content) && data.content[0]) {
-                        response = data.content[0].text;
+                    if (data.success && data.analysis) {
+                        response = data.analysis;
+                        debugLog('✅ Echte KI-Analyse erfolgreich!');
                     } else {
-                        throw new Error('Unerwartetes Antwortformat');
+                        throw new Error('Ungültige Backend Response');
                     }
-
-                    debugLog('✅ Echte KI-Analyse erfolgreich!');
 
                 } catch (apiError) {
                     debugLog(`❌ API Fehler: ${apiError.message}`);
