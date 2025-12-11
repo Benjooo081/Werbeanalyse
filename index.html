@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Werbeanalyse Dashboard - Debug Version</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { 
+            font-family: system-ui, -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        button { min-height: 44px; }
+        .touch-card { transition: all 0.2s; }
+        .touch-card:active { transform: scale(0.98); }
+        .tab-active { background: #2563eb; color: white; }
+        .tab-inactive { background: #e5e7eb; color: #4b5563; }
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: linear-gradient(to right, #ef4444 0%, #eab308 50%, #22c55e 100%);
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #2563eb;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        #debugLog {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-4 md:p-6">
+    <div class="max-w-7xl mx-auto">
+
+    <!-- Debug Console -->
+    <div id="debugConsole" class="bg-black text-green-400 rounded-lg p-4 mb-4 font-mono text-xs hidden">
+        <div class="flex justify-between items-center mb-2">
+            <span class="font-bold">🐛 Debug Console</span>
+            <button onclick="document.getElementById('debugConsole').classList.add('hidden')" class="text-red-400 hover:text-red-300">✕</button>
+        </div>
+        <div id="debugLog"></div>
+    </div>
+
+    <!-- API Key Setup Modal -->
+    <div id="apiKeyModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-md w-full">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">🔑 Claude API Key</h2>
+            <p class="text-gray-600 mb-4">Für echte KI-Analysen brauchst du einen Claude API Key von Anthropic.</p>
+            
+            <input 
+                id="apiKeyInput" 
+                type="password" 
+                placeholder="sk-ant-api03-..." 
+                class="w-full px-4 py-3 border-2 rounded-lg mb-4 text-sm"
+            >
+            
+            <div class="flex gap-2 mb-4">
+                <button id="saveKeyBtn" class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700">
+                    Speichern
+                </button>
+                <button id="skipKeyBtn" class="flex-1 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-bold hover:bg-gray-300">
+                    Demo-Modus
+                </button>
+            </div>
+            
+            <button onclick="document.getElementById('debugConsole').classList.remove('hidden')" class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-700">
+                🐛 Debug Console zeigen
+            </button>
+            
+            <p class="text-xs text-gray-500 mt-4">
+                <strong>Kein Key?</strong> Im Demo-Modus kannst du alles testen, aber Analysen sind simuliert.
+                <br><strong>Key holen:</strong> console.anthropic.com
+            </p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-4 md:mb-6">
+        <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Werbeanalyse Dashboard</h1>
+                <p class="text-sm md:text-base text-gray-600">Kollaboration • Insights • Matching</p>
+            </div>
+            <div class="flex gap-2">
+                <div class="bg-green-100 px-4 py-2 rounded-lg flex items-center gap-2">
+                    <span class="text-green-800 font-bold" id="adCount">0</span>
+                    <span class="text-green-600 text-sm">Ads</span>
+                </div>
+                <div id="apiStatus" class="bg-gray-100 px-4 py-2 rounded-lg flex items-center gap-2">
+                    <span class="text-gray-600 text-sm" id="apiStatusText">Demo</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+            <button data-tab="analyze" class="tab-btn px-4 py-3 rounded-lg font-bold touch-card tab-active">
+                🚀 Analysieren
+            </button>
+            <button data-tab="list" class="tab-btn px-4 py-3 rounded-lg font-bold touch-card tab-inactive">
+                📋 Liste
+            </button>
+            <button data-tab="insights" class="tab-btn px-4 py-3 rounded-lg font-bold touch-card tab-inactive">
+                📊 Insights
+            </button>
+            <button data-tab="matching" class="tab-btn px-4 py-3 rounded-lg font-bold touch-card tab-inactive">
+                🎯 Matching
+            </button>
+        </div>
+    </div>
+
+    <!-- Tab: Analyze -->
+    <div id="tab-analyze" class="tab-content">
+        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-4 md:mb-6">
+            <!-- Collaboration Tools -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mb-4">
+                <label class="flex-1 bg-green-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-green-600 cursor-pointer text-center touch-card">
+                    📥 Import
+                    <input type="file" id="importFile" accept=".json" class="hidden">
+                </label>
+                <button id="exportBtn" class="flex-1 bg-blue-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-blue-600 touch-card">
+                    📤 Export
+                </button>
+                <button id="showKeyBtn" class="flex-1 bg-purple-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-purple-600 touch-card">
+                    🔑 API Key
+                </button>
+                <button id="clearBtn" class="flex-1 bg-red-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-red-600 touch-card">
+                    🗑️ Alle löschen
+                </button>
+            </div>
+
+            <!-- Input Form -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                <input id="brand" placeholder="Brand" class="px-4 py-3 border-2 rounded-lg text-base">
+                <select id="category" class="px-4 py-3 border-2 rounded-lg text-base">
+                    <option value="">Kategorie wählen *</option>
+                    <option>Lebensmittel & Getränke</option>
+                    <option>Technologie & Elektronik</option>
+                    <option>Mode & Fashion</option>
+                    <option>Sport & Fitness</option>
+                    <option>Automotive</option>
+                    <option>Reisen & Tourismus</option>
+                    <option>Finanzen & Versicherungen</option>
+                    <option>Beauty & Kosmetik</option>
+                    <option>Haushalt & Wohnen</option>
+                    <option>Entertainment & Medien</option>
+                </select>
+                <input id="ctr" placeholder="CTR (z.B. 4.2%)" class="px-4 py-3 border-2 rounded-lg text-base">
+                <input id="url" placeholder="URL (optional)" class="px-4 py-3 border-2 rounded-lg text-base">
+            </div>
+
+            <textarea id="description" placeholder="Detaillierte Werbungsbeschreibung..." class="w-full px-4 py-3 border-2 rounded-lg mb-4 h-32 text-base"></textarea>
+
+            <button id="analyzeBtn" class="w-full bg-blue-600 text-white px-6 py-4 rounded-lg font-bold text-lg hover:bg-blue-700 touch-card">
+                🚀 Analysieren
+            </button>
+        </div>
+    </div>
+
+    <!-- Tab: List -->
+    <div id="tab-list" class="tab-content hidden">
+        <div id="adsList" class="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-4 md:mb-6 hidden">
+            <h2 class="text-2xl font-bold mb-4">Kategorien</h2>
+            <div id="categoriesContainer"></div>
+        </div>
+
+        <!-- Selected Ad Details -->
+        <div id="selectedAd" class="bg-white rounded-2xl shadow-xl p-6 md:p-8 hidden">
+            <h2 id="selectedBrand" class="text-2xl font-bold mb-2"></h2>
+            <p id="selectedCategory" class="text-sm text-gray-600 mb-2"></p>
+            <p id="selectedSummary" class="text-gray-700 mb-4"></p>
+            
+            <div id="selectedRedFlags" class="hidden bg-red-50 border-l-4 border-red-500 rounded-lg p-4 mb-4">
+                <h3 class="font-bold text-red-800 mb-2">⚠️ Red Flags</h3>
+                <div id="redFlagsList" class="flex gap-2 flex-wrap"></div>
+            </div>
+            
+            <div id="selectedTopAttrs" class="hidden bg-green-50 border-l-4 border-green-500 rounded-lg p-4">
+                <h3 class="font-bold text-green-800 mb-2">✅ Top Attribute</h3>
+                <div id="topAttrsList" class="flex gap-2 flex-wrap"></div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="bg-white rounded-2xl shadow-xl p-12 text-center">
+            <div class="text-6xl mb-4">📊</div>
+            <h3 class="text-xl font-bold text-gray-600 mb-2">Keine Werbungen</h3>
+            <p class="text-gray-500">Analysiere deine erste Werbung oder importiere Daten</p>
+        </div>
+    </div>
+
+    <!-- Tab: Insights -->
+    <div id="tab-insights" class="tab-content hidden">
+        <!-- KI-Analyse Input -->
+        <div class="bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl shadow-xl p-6 mb-4">
+            <h3 class="text-xl font-bold text-white mb-3 flex items-center gap-2">
+                <span>🤖</span>
+                <span>KI-Datenanalyse</span>
+            </h3>
+            <p class="text-white text-sm mb-4 opacity-90">
+                Stelle der KI Fragen zu deinen Werbedaten
+            </p>
+            
+            <div class="bg-white rounded-lg p-4 mb-3">
+                <textarea 
+                    id="aiQueryInput" 
+                    placeholder="z.B. 'Welche Werbungen haben die meisten Red Flags?'"
+                    class="w-full px-4 py-3 border-2 rounded-lg text-base h-24 resize-none"
+                ></textarea>
+            </div>
+            
+            <button id="aiAnalyzeBtn" class="w-full bg-white text-purple-600 px-6 py-3 rounded-lg font-bold text-lg hover:bg-gray-50 touch-card flex items-center justify-center gap-2">
+                <span>✨</span>
+                <span>KI-Analyse starten</span>
+            </button>
+        </div>
+
+        <!-- KI Response -->
+        <div id="aiResponseContainer" class="bg-white rounded-2xl shadow-xl p-6 mb-4 hidden">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-xl font-bold text-gray-800">🤖 KI-Antwort</h3>
+                <button id="closeAiResponse" class="text-gray-500 hover:text-gray-700 text-2xl leading-none">×</button>
+            </div>
+            <div id="aiResponseText" class="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="bg-white rounded-2xl shadow-xl p-6">
+                <h3 class="text-lg font-bold mb-4">📈 Statistiken</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Gesamt Werbungen:</span>
+                        <span class="font-bold" id="stats-total">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Kategorien:</span>
+                        <span class="font-bold" id="stats-categories">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Ø Red Flags:</span>
+                        <span class="font-bold" id="stats-redflags">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Beste CTR:</span>
+                        <span class="font-bold text-green-600" id="stats-bestctr">N/A</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl p-6">
+                <h3 class="text-lg font-bold mb-4">⚠️ Häufigste Red Flags</h3>
+                <div id="topRedFlagsContainer" class="space-y-2"></div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-white rounded-2xl shadow-xl p-6">
+                <h3 class="text-lg font-bold mb-4">📊 Ads pro Kategorie</h3>
+                <canvas id="categoryChart"></canvas>
+            </div>
+            <div class="bg-white rounded-2xl shadow-xl p-6">
+                <h3 class="text-lg font-bold mb-4">🎯 Top Attribute</h3>
+                <canvas id="attributesChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab: Matching (simplified for now) -->
+    <div id="tab-matching" class="tab-content hidden">
+        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 text-center">
+            <div class="text-6xl mb-4">🎯</div>
+            <h2 class="text-2xl font-bold mb-2">Matching Feature</h2>
+            <p class="text-gray-600">Kommt bald...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Debug logging
+    function debugLog(message) {
+        console.log('[DEBUG]', message);
+        const debugLogEl = document.getElementById('debugLog');
+        if (debugLogEl) {
+            const timestamp = new Date().toLocaleTimeString();
+            debugLogEl.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            debugLogEl.scrollTop = debugLogEl.scrollHeight;
+        }
+    }
+
+    debugLog('🚀 Script gestartet');
+
+    // Global state
+    let ads = [];
+    let expandedCategories = {};
+    let apiKey = null;
+    let hasShownApiModal = false;
+    let currentTab = 'analyze';
+    let categoryChart = null;
+    let attributesChart = null;
+
+    const ATTRIBUTES = {
+        werte: ['nachhaltigkeit','familie','individualitaet','erfolg_leistung','sicherheit','freiheit','tradition','innovation','gemeinschaft','gesundheit','authentizitaet','luxus','pragmatismus','abenteuer'],
+        emotional: ['humor','nostalgie','inspiration','vertrauen','ueberraschung','freude','stolz','neugier','empathie','aufregung','entspannung','rebellion','dringlichkeit','hoffnung'],
+        aesthetik: ['minimalistisch','luxurioes','verspielt','professionell','natuerlich','technologisch','vintage','urban','rustikal','elegant','dynamisch','ruhig','kuenstlerisch','dokumentarisch']
+    };
+
+    debugLog('✅ Variablen initialisiert');
+
+    // Init
+    function init() {
+        debugLog('⚙️ Init gestartet');
+        loadAds();
+        loadApiKey();
+        
+        if (!hasShownApiModal) {
+            debugLog('📋 Zeige API Key Modal');
+            document.getElementById('apiKeyModal').style.display = 'flex';
+        }
+        updateUI();
+        debugLog('✅ Init abgeschlossen');
+    }
+
+    // API Key Management
+    function loadApiKey() {
+        apiKey = localStorage.getItem('claude_api_key');
+        debugLog(`🔑 API Key geladen: ${apiKey ? 'Ja' : 'Nein'}`);
+        updateApiStatus();
+    }
+
+    function saveApiKey() {
+        debugLog('💾 Speichere API Key');
+        const key = document.getElementById('apiKeyInput').value.trim();
+        if (key && key.startsWith('sk-ant-')) {
+            localStorage.setItem('claude_api_key', key);
+            apiKey = key;
+            document.getElementById('apiKeyModal').style.display = 'none';
+            hasShownApiModal = true;
+            updateApiStatus();
+            debugLog('✅ API Key gespeichert');
+            alert('✅ API Key gespeichert! Echte Analysen aktiviert.');
+        } else {
+            debugLog('❌ Ungültiger API Key');
+            alert('❌ Ungültiger API Key. Muss mit sk-ant- beginnen.');
+        }
+    }
+
+    function skipApiKey() {
+        debugLog('⏭️ API Key übersprungen - Demo-Modus');
+        document.getElementById('apiKeyModal').style.display = 'none';
+        hasShownApiModal = true;
+        alert('ℹ️ Demo-Modus aktiviert. Analysen sind simuliert.');
+    }
+
+    function showApiKeyModal() {
+        debugLog('📋 Zeige API Key Modal');
+        document.getElementById('apiKeyModal').style.display = 'flex';
+    }
+
+    function updateApiStatus() {
+        const statusEl = document.getElementById('apiStatusText');
+        const statusDiv = document.getElementById('apiStatus');
+        if (apiKey) {
+            statusEl.textContent = 'API ✓';
+            statusDiv.className = 'bg-green-100 px-4 py-2 rounded-lg flex items-center gap-2';
+            debugLog('✅ API Status: Aktiv');
+        } else {
+            statusEl.textContent = 'Demo';
+            statusDiv.className = 'bg-gray-100 px-4 py-2 rounded-lg flex items-center gap-2';
+            debugLog('ℹ️ API Status: Demo');
+        }
+    }
+
+    // Data Management
+    function loadAds() {
+        const stored = localStorage.getItem('analyzed_ads');
+        if (stored) {
+            try { 
+                ads = JSON.parse(stored);
+                debugLog(`📦 ${ads.length} Ads geladen`);
+            } catch(e){ 
+                ads = [];
+                debugLog('❌ Fehler beim Laden der Ads');
+            }
+        } else {
+            debugLog('ℹ️ Keine gespeicherten Ads');
+        }
+    }
+
+    function saveAds() {
+        localStorage.setItem('analyzed_ads', JSON.stringify(ads));
+        debugLog(`💾 ${ads.length} Ads gespeichert`);
+        updateUI();
+    }
+
+    // Tab Navigation
+    function switchTab(tab) {
+        debugLog(`📑 Wechsel zu Tab: ${tab}`);
+        currentTab = tab;
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('tab-active');
+            btn.classList.add('tab-inactive');
+        });
+        document.getElementById('tab-' + tab).classList.remove('hidden');
+        document.querySelector(`[data-tab="${tab}"]`).classList.add('tab-active');
+        document.querySelector(`[data-tab="${tab}"]`).classList.remove('tab-inactive');
+        if (tab === 'insights') updateInsights();
+        if (tab === 'list') updateListView();
+    }
+
+    // Generate Demo Analysis
+    function generateDemoAnalysis(category, description) {
+        debugLog('🎭 Generiere Demo-Analyse');
+        const randomScore = () => Math.floor(Math.random() * 200) - 100;
+        const pickRandom = (arr, count) => {
+            const shuffled = [...arr].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        };
+
+        const allAttrs = [...ATTRIBUTES.werte, ...ATTRIBUTES.emotional, ...ATTRIBUTES.aesthetik];
+        const topAttrs = pickRandom(allAttrs, 3);
+        const redFlags = Math.random() > 0.5 ? pickRandom(allAttrs, 2) : [];
+
+        const attributes = {};
+        Object.keys(ATTRIBUTES).forEach(group => {
+            attributes[group] = {};
+            ATTRIBUTES[group].forEach(attr => {
+                const score = randomScore();
+                attributes[group][attr] = {
+                    score,
+                    type: score > 50 ? 'strength' : score < -50 ? 'red_flag' : 'neutral',
+                    reason: 'Demo-Analyse'
+                };
+            });
+        });
+
+        return {
+            summary: `Demo-Analyse für ${category}: ${description.substring(0, 100)}...`,
+            top_attributes: topAttrs,
+            red_flags: redFlags,
+            attributes
+        };
+    }
+
+    // Analyze Ad with Backend
+    async function analyzeAd() {
+        debugLog('🔍 analyzeAd() aufgerufen');
+        
+        const brand = document.getElementById('brand').value.trim();
+        const category = document.getElementById('category').value;
+        const ctr = document.getElementById('ctr').value.trim();
+        const url = document.getElementById('url').value.trim();
+        const description = document.getElementById('description').value.trim();
+
+        debugLog(`Input: Brand="${brand}", Kategorie="${category}", Beschreibung länge=${description.length}`);
+
+        if (!description || !category) {
+            debugLog('❌ Validierung fehlgeschlagen');
+            alert('❌ Bitte Beschreibung und Kategorie eingeben!');
+            return;
+        }
+
+        const btn = document.getElementById('analyzeBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Analysiere...';
+        debugLog('⏳ Analyse gestartet');
+
+        try {
+            let analysis;
+            
+            if (apiKey) {
+                // Backend API Call
+                debugLog('🔑 Verwende Backend API');
+                try {
+                    const backendUrl = 'http://localhost:3001/api/analyze';
+                    debugLog(`📡 Sende Request zu: ${backendUrl}`);
+                    
+                    const response = await fetch(backendUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            brand,
+                            category,
+                            ctr,
+                            description
+                        })
+                    });
+
+                    debugLog(`📡 Response Status: ${response.status}`);
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        debugLog(`❌ Backend Error: ${JSON.stringify(errorData)}`);
+                        throw new Error(errorData.error || 'Backend Error');
+                    }
+
+                    const data = await response.json();
+                    debugLog('✅ Backend Response erhalten');
+
+                    if (data.success && data.analysis) {
+                        analysis = data.analysis;
+                        debugLog('✅ Echte API-Analyse erfolgreich!');
+                    } else {
+                        throw new Error('Ungültige Backend Response');
+                    }
+
+                } catch (apiError) {
+                    debugLog(`❌ Backend Fehler: ${apiError.message}`);
+                    
+                    if (apiError.message.includes('Failed to fetch') || apiError.message.includes('NetworkError')) {
+                        alert(`❌ Backend nicht erreichbar!\n\nBitte stelle sicher dass:\n1. Das Backend läuft (npm start)\n2. Es auf Port 3001 läuft\n\nVerwende Demo-Modus stattdessen.`);
+                    } else {
+                        alert(`❌ API Fehler: ${apiError.message}\n\nVerwende Demo-Modus stattdessen.`);
+                    }
+                    
+                    analysis = generateDemoAnalysis(category, description);
+                }
+            } else {
+                // Demo-Analyse
+                debugLog('🎭 Verwende Demo-Analyse (kein API Key)');
+                analysis = generateDemoAnalysis(category, description);
+            }
+
+            const newAd = {
+                id: Date.now(),
+                brand: brand || 'Unbekannt',
+                category,
+                ctr: ctr || 'N/A',
+                url,
+                description,
+                timestamp: new Date().toLocaleString('de-DE'),
+                analysis
+            };
+
+            debugLog('➕ Füge neue Ad hinzu');
+            ads.unshift(newAd);
+            saveAds();
+
+            // Clear form
+            document.getElementById('brand').value = '';
+            document.getElementById('category').value = '';
+            document.getElementById('ctr').value = '';
+            document.getElementById('url').value = '';
+            document.getElementById('description').value = '';
+
+            debugLog('✅ Analyse erfolgreich!');
+            alert('✅ Werbung analysiert und gespeichert!');
+
+        } catch (error) {
+            debugLog(`❌ Fehler: ${error.message}`);
+            console.error(error);
+            alert('❌ Fehler: ' + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🚀 Analysieren';
+            debugLog('🏁 Analyse abgeschlossen');
+        }
+    }
+            
+            if (apiKey) {
+                // Echte API-Analyse
+                debugLog('🔑 Verwende echten API Key');
+                try {
+                    const prompt = `Du musst mit einem validen JSON-Objekt antworten. KEINE zusätzlichen Texte, KEINE Erklärungen, KEINE Markdown-Formatierung.
+
+Analysiere diese Werbung und bewerte die wichtigsten Attribute auf einer Skala von -100 bis +100.
+
+Werbung:
+Brand: ${brand || 'Unbekannt'}
+Kategorie: ${category}
+CTR: ${ctr}
+Beschreibung: ${description}
+
+Antworte ausschließlich mit diesem JSON-Format:
+{
+  "summary": "Kurze Analyse-Zusammenfassung in 1-2 Sätzen",
+  "top_attributes": ["attr1", "attr2", "attr3"],
+  "red_flags": ["attr1", "attr2"],
+  "attributes": {
+    "werte": {
+      "nachhaltigkeit": {"score": 0, "type": "neutral", "reason": "kurz"},
+      "innovation": {"score": 70, "type": "strength", "reason": "kurz"}
+    },
+    "emotional": {
+      "vertrauen": {"score": 50, "type": "neutral", "reason": "kurz"}
+    },
+    "aesthetik": {
+      "professionell": {"score": 60, "type": "strength", "reason": "kurz"}
+    }
+  }
+}`;
+
+                    debugLog('📡 Sende API-Anfrage...');
+                    
+                    let response;
+                    try {
+                        response = await fetch('https://api.anthropic.com/v1/messages', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'x-api-key': apiKey,
+                                'anthropic-version': '2023-06-01'
+                            },
+                            body: JSON.stringify({
+                                model: 'claude-sonnet-4-20250514',
+                                max_tokens: 3000,
+                                messages: [{role: 'user', content: prompt}]
+                            })
+                        });
+                    } catch (fetchError) {
+                        debugLog(`❌ Fetch Error: ${fetchError.message}`);
+                        throw new Error(`Netzwerkfehler: ${fetchError.message}`);
+                    }
+
+                    debugLog(`📡 Response Status: ${response.status}`);
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        debugLog(`❌ API Error Response: ${errorText.substring(0, 200)}`);
+                        throw new Error(`API Fehler (${response.status}): ${errorText.substring(0, 100)}`);
+                    }
+
+                    const data = await response.json();
+                    debugLog('📦 API Response erhalten');
+                    
+                    // Defensive Checks
+                    if (!data) {
+                        throw new Error('Keine Daten von API erhalten');
+                    }
+                    
+                    debugLog(`📦 Response keys: ${Object.keys(data).join(', ')}`);
+
+                    if (data.error) {
+                        debugLog(`❌ API Error in response: ${JSON.stringify(data.error)}`);
+                        throw new Error(data.error.message || 'API Error');
+                    }
+
+                    let text = '';
+                    
+                    // Prüfe verschiedene mögliche Response-Strukturen
+                    if (data.content && Array.isArray(data.content)) {
+                        debugLog(`📦 content ist Array mit ${data.content.length} Elementen`);
+                        
+                        if (data.content.length > 0 && data.content[0]) {
+                            const firstContent = data.content[0];
+                            debugLog(`📦 Erstes Element: type=${firstContent.type}`);
+                            
+                            if (firstContent.text) {
+                                text = firstContent.text;
+                            } else if (typeof firstContent === 'string') {
+                                text = firstContent;
+                            } else {
+                                debugLog(`⚠️ Unerwarteter content type: ${JSON.stringify(firstContent).substring(0, 100)}`);
+                            }
+                        }
+                    } else if (data.completion) {
+                        // Alte API-Version
+                        text = data.completion;
+                        debugLog('📦 Verwende data.completion');
+                    } else if (typeof data === 'string') {
+                        text = data;
+                        debugLog('📦 Response ist direkt String');
+                    } else {
+                        debugLog(`⚠️ Unerwartete Response-Struktur:`);
+                        debugLog(JSON.stringify(data).substring(0, 300));
+                    }
+
+                    debugLog(`📝 Text erhalten (${text.length} Zeichen)`);
+                    
+                    if (!text || text.length === 0) {
+                        throw new Error('Leere Antwort von API');
+                    }
+                    
+                    debugLog(`📝 Voller Text:`);
+                    debugLog(text);
+
+                    // Extrahiere JSON - versuche verschiedene Methoden
+                    let jsonText = text;
+                    
+                    // Methode 1: Suche nach JSON-Block in Backticks
+                    const codeBlockMatch = text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+                    if (codeBlockMatch) {
+                        jsonText = codeBlockMatch[1];
+                        debugLog('✓ JSON in Code-Block gefunden');
+                    } else {
+                        // Methode 2: Suche nach dem ersten { bis zum letzten }
+                        const firstBrace = text.indexOf('{');
+                        const lastBrace = text.lastIndexOf('}');
+                        debugLog(`🔍 Suche Klammern: first=${firstBrace}, last=${lastBrace}`);
+                        
+                        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+                            jsonText = text.substring(firstBrace, lastBrace + 1);
+                            debugLog('✓ JSON via Klammern extrahiert');
+                        } else {
+                            debugLog('⚠️ Kein JSON-Format erkannt, verwende ganzen Text');
+                        }
+                    }
+                    
+                    debugLog('🔧 Versuche JSON zu parsen...');
+                    debugLog(`🔧 JSON Text (Länge ${jsonText.length}):`);
+                    debugLog(jsonText.substring(0, 500));
+                    
+                    try {
+                        analysis = JSON.parse(jsonText);
+                        debugLog('✅ JSON erfolgreich geparst!');
+                        debugLog(`✅ Keys: ${Object.keys(analysis).join(', ')}`);
+                    } catch (parseError) {
+                        debugLog(`❌ JSON Parse Fehler: ${parseError.message}`);
+                        debugLog(`❌ Problematischer Text: ${jsonText.substring(0, 200)}`);
+                        throw new Error(`JSON Parse Error: ${parseError.message}`);
+                    }
+                    
+                    debugLog('✅ Echte API-Analyse erfolgreich!');
+
+                } catch (apiError) {
+                    debugLog(`❌ API Fehler: ${apiError.message}`);
+                    debugLog(`❌ Error Stack: ${apiError.stack || 'N/A'}`);
+                    
+                    // Zeige mehr Details wenn JSON-Parse-Fehler
+                    if (apiError instanceof SyntaxError) {
+                        debugLog('❌ JSON Parse Error - möglicherweise kein valides JSON in der Antwort');
+                    }
+                    
+                    alert(`❌ API Fehler: ${apiError.message}\n\nVerwende Demo-Modus stattdessen.`);
+                    analysis = generateDemoAnalysis(category, description);
+                }
+            } else {
+                // Demo-Analyse
+                debugLog('🎭 Verwende Demo-Analyse (kein API Key)');
+                analysis = generateDemoAnalysis(category, description);
+            }
+
+            const newAd = {
+                id: Date.now(),
+                brand: brand || 'Unbekannt',
+                category,
+                ctr: ctr || 'N/A',
+                url,
+                description,
+                timestamp: new Date().toLocaleString('de-DE'),
+                analysis
+            };
+
+            debugLog('➕ Füge neue Ad hinzu');
+            ads.unshift(newAd);
+            saveAds();
+
+            // Clear form
+            document.getElementById('brand').value = '';
+            document.getElementById('category').value = '';
+            document.getElementById('ctr').value = '';
+            document.getElementById('url').value = '';
+            document.getElementById('description').value = '';
+
+            debugLog('✅ Analyse erfolgreich!');
+            alert('✅ Werbung analysiert und gespeichert!');
+
+        } catch (error) {
+            debugLog(`❌ Fehler: ${error.message}`);
+            console.error(error);
+            alert('❌ Fehler: ' + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🚀 Analysieren';
+            debugLog('🏁 Analyse abgeschlossen');
+        }
+    }
+
+    // Delete Ad
+    function deleteAd(id) {
+        if (confirm('Werbung wirklich löschen?')) {
+            debugLog(`🗑️ Lösche Ad ${id}`);
+            ads = ads.filter(ad => ad.id !== id);
+            saveAds();
+        }
+    }
+
+    // Clear All
+    function clearAllData() {
+        if (confirm('ALLE Werbungen löschen?')) {
+            if (confirm('Wirklich sicher?')) {
+                debugLog('🗑️ Lösche alle Daten');
+                ads = [];
+                localStorage.removeItem('analyzed_ads');
+                updateUI();
+                alert('✅ Alle Daten gelöscht!');
+            }
+        }
+    }
+
+    // Update List View
+    function updateListView() {
+        debugLog('📋 Update List View');
+        if (ads.length === 0) {
+            document.getElementById('emptyState').classList.remove('hidden');
+            document.getElementById('adsList').classList.add('hidden');
+            return;
+        }
+
+        document.getElementById('emptyState').classList.add('hidden');
+        document.getElementById('adsList').classList.remove('hidden');
+
+        const grouped = {};
+        ads.forEach(ad => {
+            if (!grouped[ad.category]) grouped[ad.category] = [];
+            grouped[ad.category].push(ad);
+        });
+
+        const container = document.getElementById('categoriesContainer');
+        container.innerHTML = Object.entries(grouped).map(([cat, catAds]) => `
+            <div class="border-2 rounded-xl mb-4 p-4">
+                <h3 class="font-bold text-lg mb-3">${cat} (${catAds.length})</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    ${catAds.map(ad => `
+                        <div class="border-2 rounded-xl p-4">
+                            <h3 class="font-bold text-lg">${ad.brand}</h3>
+                            <p class="text-sm text-gray-600">${ad.category}</p>
+                            <div class="flex items-center gap-2 mt-2">
+                                <span class="text-xs">CTR: ${ad.ctr}</span>
+                            </div>
+                            <button onclick="deleteAd(${ad.id})" class="mt-3 w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 font-bold">
+                                🗑️ Löschen
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Update Insights
+    function updateInsights() {
+        debugLog('📊 Update Insights');
+        if (ads.length === 0) {
+            document.getElementById('stats-total').textContent = '0';
+            document.getElementById('stats-categories').textContent = '0';
+            document.getElementById('stats-redflags').textContent = '0';
+            document.getElementById('stats-bestctr').textContent = 'N/A';
+            return;
+        }
+
+        const categories = new Set(ads.map(ad => ad.category)).size;
+        const avgRedFlags = (ads.reduce((sum, ad) => sum + (ad.analysis.red_flags?.length || 0), 0) / ads.length).toFixed(1);
+
+        document.getElementById('stats-total').textContent = ads.length;
+        document.getElementById('stats-categories').textContent = categories;
+        document.getElementById('stats-redflags').textContent = avgRedFlags;
+        document.getElementById('stats-bestctr').textContent = 'N/A';
+    }
+
+    // Export JSON
+    function exportJSON() {
+        if (ads.length === 0) {
+            alert('❌ Keine Daten zum Exportieren!');
+            return;
+        }
+        debugLog(`📤 Exportiere ${ads.length} Ads`);
+        const dataStr = JSON.stringify(ads, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'werbung_analyse_' + new Date().toISOString().split('T')[0] + '.json';
+        a.click();
+        alert('✅ JSON exportiert!');
+    }
+
+    // Import JSON
+    function importJSON() {
+        const file = document.getElementById('importFile').files[0];
+        if (!file) return;
+
+        debugLog('📥 Importiere JSON');
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if (!Array.isArray(imported)) {
+                    alert('❌ Ungültiges Format!');
+                    return;
+                }
+
+                const existingIds = new Set(ads.map(ad => ad.id));
+                const newAds = imported.filter(ad => !existingIds.has(ad.id));
+
+                if (newAds.length === 0) {
+                    alert('ℹ️ Keine neuen Werbungen gefunden.');
+                    return;
+                }
+
+                if (confirm(`${newAds.length} neue Werbungen importieren?`)) {
+                    ads = [...ads, ...newAds];
+                    saveAds();
+                    debugLog(`✅ ${newAds.length} Ads importiert`);
+                    alert('✅ Import erfolgreich!');
+                }
+            } catch (error) {
+                debugLog(`❌ Import Fehler: ${error.message}`);
+                alert('❌ Fehler beim Import: ' + error.message);
+            }
+
+            document.getElementById('importFile').value = '';
+        };
+        reader.readAsText(file);
+    }
+
+    // Update UI
+    function updateUI() {
+        document.getElementById('adCount').textContent = ads.length;
+        if (currentTab === 'list') updateListView();
+        else if (currentTab === 'insights') updateInsights();
+    }
+
+    // AI Analysis
+    async function performAiAnalysis() {
+        debugLog('🤖 KI-Analyse gestartet');
+        const query = document.getElementById('aiQueryInput').value.trim();
+
+        if (!query) {
+            alert('❌ Bitte gib eine Frage ein!');
+            return;
+        }
+
+        if (ads.length === 0) {
+            alert('❌ Keine Werbedaten vorhanden!');
+            return;
+        }
+
+        const btn = document.getElementById('aiAnalyzeBtn');
+        const originalHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span>⏳</span><span>Analysiere...</span>';
+
+        try {
+            let response;
+            
+            if (apiKey) {
+                debugLog('🔑 Verwende echten API Key für KI-Analyse');
+                
+                try {
+                    const dataContext = JSON.stringify({
+                        total_ads: ads.length,
+                        categories: [...new Set(ads.map(a => a.category))],
+                        all_ads: ads.map(ad => ({
+                            id: ad.id,
+                            brand: ad.brand,
+                            category: ad.category,
+                            ctr: ad.ctr,
+                            summary: ad.analysis.summary,
+                            red_flags: ad.analysis.red_flags,
+                            top_attributes: ad.analysis.top_attributes
+                        }))
+                    }, null, 2);
+
+                    const prompt = `Du bist ein Datenanalyst für Werbedaten. Analysiere die folgenden Werbedaten und beantworte die Nutzeranfrage präzise und detailliert.
+
+Werbedaten:
+${dataContext}
+
+Nutzeranfrage: ${query}
+
+Gib eine strukturierte, detaillierte Analyse mit konkreten Zahlen, Trends und Insights.`;
+
+                    debugLog('📡 Sende KI-Analyse-Anfrage...');
+
+                    const apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': apiKey,
+                            'anthropic-version': '2023-06-01'
+                        },
+                        body: JSON.stringify({
+                            model: 'claude-sonnet-4-20250514',
+                            max_tokens: 4000,
+                            messages: [{role: 'user', content: prompt}]
+                        })
+                    });
+
+                    debugLog(`📡 Response Status: ${apiResponse.status}`);
+
+                    if (!apiResponse.ok) {
+                        const errorText = await apiResponse.text();
+                        debugLog(`❌ API Error: ${errorText}`);
+                        throw new Error(`API Fehler (${apiResponse.status})`);
+                    }
+
+                    const data = await apiResponse.json();
+
+                    if (data.error) {
+                        throw new Error(data.error.message || 'API Error');
+                    }
+
+                    if (data.content && Array.isArray(data.content) && data.content[0]) {
+                        response = data.content[0].text;
+                    } else {
+                        throw new Error('Unerwartetes Antwortformat');
+                    }
+
+                    debugLog('✅ Echte KI-Analyse erfolgreich!');
+
+                } catch (apiError) {
+                    debugLog(`❌ API Fehler: ${apiError.message}`);
+                    response = `❌ API Fehler: ${apiError.message}
+
+Verwende Demo-Modus stattdessen:
+
+🤖 Demo-Antwort für: "${query}"
+
+📊 Datenübersicht:
+- Gesamt Werbungen: ${ads.length}
+- Kategorien: ${new Set(ads.map(a => a.category)).size}
+
+💡 Bitte überprüfe deinen API Key oder nutze den Demo-Modus.`;
+                }
+            } else {
+                debugLog('🎭 Verwende Demo-Analyse (kein API Key)');
+                response = `🤖 Demo-Antwort für: "${query}"
+
+📊 Datenübersicht:
+- Gesamt Werbungen: ${ads.length}
+- Kategorien: ${new Set(ads.map(a => a.category)).size}
+
+💡 Dies ist eine Demo-Antwort. Mit einem echten API Key würde hier eine detaillierte KI-Analyse erscheinen.`;
+            }
+
+            document.getElementById('aiResponseText').textContent = response;
+            document.getElementById('aiResponseContainer').classList.remove('hidden');
+            debugLog('✅ KI-Antwort angezeigt');
+
+        } catch (error) {
+            debugLog(`❌ Unerwarteter Fehler: ${error.message}`);
+            alert(`❌ Fehler: ${error.message}`);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+        }
+    }
+
+    // Event Listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        debugLog('📱 DOM Content Loaded');
+
+        try {
+            // Buttons
+            document.getElementById('saveKeyBtn').addEventListener('click', saveApiKey);
+            debugLog('✅ saveKeyBtn event listener hinzugefügt');
+
+            document.getElementById('skipKeyBtn').addEventListener('click', skipApiKey);
+            debugLog('✅ skipKeyBtn event listener hinzugefügt');
+
+            document.getElementById('showKeyBtn').addEventListener('click', showApiKeyModal);
+            debugLog('✅ showKeyBtn event listener hinzugefügt');
+
+            document.getElementById('analyzeBtn').addEventListener('click', function() {
+                debugLog('🖱️ Analyze Button geklickt!');
+                analyzeAd();
+            });
+            debugLog('✅ analyzeBtn event listener hinzugefügt');
+
+            document.getElementById('exportBtn').addEventListener('click', exportJSON);
+            debugLog('✅ exportBtn event listener hinzugefügt');
+
+            document.getElementById('clearBtn').addEventListener('click', clearAllData);
+            debugLog('✅ clearBtn event listener hinzugefügt');
+
+            document.getElementById('importFile').addEventListener('change', importJSON);
+            debugLog('✅ importFile event listener hinzugefügt');
+
+            document.getElementById('aiAnalyzeBtn').addEventListener('click', performAiAnalysis);
+            debugLog('✅ aiAnalyzeBtn event listener hinzugefügt');
+
+            document.getElementById('closeAiResponse').addEventListener('click', () => {
+                document.getElementById('aiResponseContainer').classList.add('hidden');
+            });
+            debugLog('✅ closeAiResponse event listener hinzugefügt');
+
+            // Tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+            });
+            debugLog('✅ Tab event listeners hinzugefügt');
+
+            // Init
+            init();
+
+        } catch (error) {
+            debugLog(`❌ Fehler beim Setup: ${error.message}`);
+            console.error('Setup error:', error);
+            alert('❌ Fehler beim Laden der App. Bitte Konsole prüfen.');
+        }
+    });
+
+    debugLog('✅ Script vollständig geladen');
+</script>
+
+</body>
+</html>
