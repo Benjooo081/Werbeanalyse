@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Werbeanalyse Dashboard</title>
+    <title>Werbeanalyse Dashboard MVP2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -16,24 +16,38 @@
         .touch-card:active { transform: scale(0.98); }
         .tab-active { background: #2563eb; color: white; }
         .tab-inactive { background: #e5e7eb; color: #4b5563; }
-        input[type="range"] {
+        
+        /* Attribute Slider Styles */
+        .attr-slider {
             -webkit-appearance: none;
             width: 100%;
-            height: 8px;
-            border-radius: 5px;
-            background: linear-gradient(to right, #ef4444 0%, #eab308 50%, #22c55e 100%);
+            height: 6px;
+            border-radius: 3px;
+            background: #e5e7eb;
             outline: none;
         }
-        input[type="range"]::-webkit-slider-thumb {
+        .attr-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
-            background: #2563eb;
+            background: #3b82f6;
             cursor: pointer;
-            border: 3px solid white;
+            border: 2px solid white;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        /* Match Score Badge */
+        .match-badge {
+            background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+        }
+        
+        /* Attribute Bar */
+        .attr-bar {
+            height: 8px;
+            background: linear-gradient(to right, #ef4444 0%, #eab308 50%, #22c55e 100%);
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -44,15 +58,15 @@
     <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-4 md:mb-6">
         <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
             <div>
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Werbeanalyse Dashboard</h1>
-                <p class="text-sm md:text-base text-gray-600">Kollaboration • Insights • Matching</p>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Werbeanalyse MVP2</h1>
+                <p class="text-sm md:text-base text-gray-600">Attribut-Profiling • Matching • Insights</p>
             </div>
             <div class="flex gap-2">
                 <div class="bg-green-100 px-4 py-2 rounded-lg flex items-center gap-2">
                     <span class="text-green-800 font-bold" id="adCount">0</span>
                     <span class="text-green-600 text-sm">Ads</span>
                 </div>
-                <div id="apiStatus" class="bg-green-100 px-4 py-2 rounded-lg flex items-center gap-2">
+                <div class="bg-green-100 px-4 py-2 rounded-lg flex items-center gap-2">
                     <span class="text-green-800 font-bold text-sm">Backend ✓</span>
                 </div>
             </div>
@@ -115,7 +129,7 @@
             <textarea id="description" placeholder="Detaillierte Werbungsbeschreibung..." class="w-full px-4 py-3 border-2 rounded-lg mb-4 h-32 text-base"></textarea>
 
             <button id="analyzeBtn" class="w-full bg-blue-600 text-white px-6 py-4 rounded-lg font-bold text-lg hover:bg-blue-700 touch-card">
-                🚀 Analysieren
+                🚀 Attribut-Profil erstellen
             </button>
         </div>
     </div>
@@ -123,7 +137,7 @@
     <!-- Tab: List -->
     <div id="tab-list" class="tab-content hidden">
         <div id="adsList" class="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-4 md:mb-6 hidden">
-            <h2 class="text-2xl font-bold mb-4">Kategorien</h2>
+            <h2 class="text-2xl font-bold mb-4">Werbungen nach Kategorie</h2>
             <div id="categoriesContainer"></div>
         </div>
 
@@ -150,7 +164,7 @@
             <div class="bg-white rounded-lg p-4 mb-3">
                 <textarea 
                     id="aiQueryInput" 
-                    placeholder="z.B. 'Welche Werbungen haben die meisten Red Flags?'"
+                    placeholder="z.B. 'Welche Werbungen haben die stärksten Attribute?' oder 'Zeige mir Trends bei Innovation'"
                     class="w-full px-4 py-3 border-2 rounded-lg text-base h-24 resize-none"
                 ></textarea>
             </div>
@@ -183,15 +197,15 @@
                         <span class="font-bold" id="stats-categories">0</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-600">Ø Red Flags:</span>
-                        <span class="font-bold" id="stats-redflags">0</span>
+                        <span class="text-gray-600">Ø Intensität:</span>
+                        <span class="font-bold" id="stats-intensity">-</span>
                     </div>
                 </div>
             </div>
 
             <div class="bg-white rounded-2xl shadow-xl p-6">
-                <h3 class="text-lg font-bold mb-4">⚠️ Häufigste Red Flags</h3>
-                <div id="topRedFlagsContainer" class="space-y-2"></div>
+                <h3 class="text-lg font-bold mb-4">🔥 Häufigste dominante Attribute</h3>
+                <div id="topAttributesContainer" class="space-y-2"></div>
             </div>
         </div>
 
@@ -201,7 +215,7 @@
                 <canvas id="categoryChart"></canvas>
             </div>
             <div class="bg-white rounded-2xl shadow-xl p-6">
-                <h3 class="text-lg font-bold mb-4">🎯 Top Attribute</h3>
+                <h3 class="text-lg font-bold mb-4">🎯 Top Attribute gesamt</h3>
                 <canvas id="attributesChart"></canvas>
             </div>
         </div>
@@ -209,52 +223,119 @@
 
     <!-- Tab: Matching -->
     <div id="tab-matching" class="tab-content hidden">
-        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 text-center">
-            <div class="text-6xl mb-4">🎯</div>
-            <h2 class="text-2xl font-bold mb-2">Matching Feature</h2>
-            <p class="text-gray-600">Feature kommt bald...</p>
+        <!-- User Profile Section -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-4">
+            <h2 class="text-2xl font-bold mb-4">👤 Dein Profil</h2>
+            <p class="text-gray-600 mb-6">Erstelle dein Präferenz-Profil um passende Werbungen zu finden</p>
+            
+            <div id="userProfileEditor"></div>
+            
+            <button id="saveProfileBtn" class="w-full bg-blue-600 text-white px-6 py-4 rounded-lg font-bold text-lg hover:bg-blue-700 touch-card mt-4">
+                💾 Profil speichern & Matches finden
+            </button>
+        </div>
+
+        <!-- Matches Section -->
+        <div id="matchesSection" class="hidden">
+            <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+                <h2 class="text-2xl font-bold mb-4">🎯 Deine Matches</h2>
+                <div id="matchesContainer"></div>
+            </div>
+        </div>
+
+        <!-- No Profile State -->
+        <div id="noProfileState" class="bg-white rounded-2xl shadow-xl p-12 text-center">
+            <div class="text-6xl mb-4">👤</div>
+            <h3 class="text-xl font-bold text-gray-600 mb-2">Erstelle dein Profil</h3>
+            <p class="text-gray-500">Nutze die Slider oben um deine Präferenzen festzulegen</p>
         </div>
     </div>
 </div>
 
+<!-- Script wird in Teil 2 fortgesetzt -->
+<script>
 <script>
     // ========================================
-    // 🔧 KONFIGURATION - NUR HIER ÄNDERN!
+    // 🔧 KONFIGURATION
     // ========================================
-    // Ersetze 'http://localhost:3001' mit deiner Render.com URL
-    // Beispiel: 'https://werbeanalyse-backend-abc123.onrender.com'
     const BACKEND_URL = 'https://werbeanalyse.onrender.com';
     // ========================================
 
+    // Alle Attribute definiert
+    const ATTRIBUTES = {
+        werte: ['nachhaltigkeit', 'familie', 'individualitaet', 'erfolg_leistung', 'sicherheit', 'freiheit', 'tradition', 'innovation', 'gemeinschaft', 'gesundheit', 'authentizitaet', 'luxus', 'pragmatismus', 'abenteuer'],
+        emotional: ['humor', 'nostalgie', 'inspiration', 'vertrauen', 'ueberraschung', 'freude', 'stolz', 'neugier', 'empathie', 'aufregung', 'entspannung', 'rebellion', 'dringlichkeit', 'hoffnung'],
+        aesthetik: ['minimalistisch', 'luxurioes', 'verspielt', 'professionell', 'natuerlich', 'technologisch', 'vintage', 'urban', 'rustikal', 'elegant', 'dynamisch', 'ruhig', 'kuenstlerisch', 'dokumentarisch']
+    };
+
+    // Kategorie-Gewichtungen (werden vom Backend geladen)
+    let CATEGORY_WEIGHTS = {};
+
     // Global state
     let ads = [];
+    let userProfile = null;
     let currentTab = 'analyze';
     let categoryChart = null;
     let attributesChart = null;
 
-    const ATTRIBUTES = {
-        werte: ['nachhaltigkeit','familie','individualitaet','erfolg_leistung','sicherheit','freiheit','tradition','innovation','gemeinschaft','gesundheit','authentizitaet','luxus','pragmatismus','abenteuer'],
-        emotional: ['humor','nostalgie','inspiration','vertrauen','ueberraschung','freude','stolz','neugier','empathie','aufregung','entspannung','rebellion','dringlichkeit','hoffnung'],
-        aesthetik: ['minimalistisch','luxurioes','verspielt','professionell','natuerlich','technologisch','vintage','urban','rustikal','elegant','dynamisch','ruhig','kuenstlerisch','dokumentarisch']
-    };
-
     // Init
-    function init() {
+    async function init() {
         loadAds();
+        loadUserProfile();
+        await loadCategoryWeights();
         updateUI();
+        buildUserProfileEditor();
+    }
+
+    // Load category weights from backend
+    async function loadCategoryWeights() {
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/category-weights`);
+            if (response.ok) {
+                const data = await response.json();
+                CATEGORY_WEIGHTS = data.weights;
+                console.log('✅ Gewichtungen geladen');
+            }
+        } catch (error) {
+            console.log('⚠️ Fallback zu Default-Gewichtungen');
+            // Fallback weights
+            CATEGORY_WEIGHTS = {
+                'Lebensmittel & Getränke': { werte: 0.45, emotional: 0.35, aesthetik: 0.20 },
+                'Technologie & Elektronik': { werte: 0.25, emotional: 0.25, aesthetik: 0.50 },
+                'Mode & Fashion': { werte: 0.20, emotional: 0.30, aesthetik: 0.50 },
+                'Sport & Fitness': { werte: 0.35, emotional: 0.35, aesthetik: 0.30 },
+                'Automotive': { werte: 0.30, emotional: 0.25, aesthetik: 0.45 },
+                'Reisen & Tourismus': { werte: 0.25, emotional: 0.50, aesthetik: 0.25 },
+                'Finanzen & Versicherungen': { werte: 0.60, emotional: 0.30, aesthetik: 0.10 },
+                'Beauty & Kosmetik': { werte: 0.25, emotional: 0.30, aesthetik: 0.45 },
+                'Haushalt & Wohnen': { werte: 0.35, emotional: 0.25, aesthetik: 0.40 },
+                'Entertainment & Medien': { werte: 0.15, emotional: 0.60, aesthetik: 0.25 }
+            };
+        }
     }
 
     // Data Management
     function loadAds() {
-        const stored = localStorage.getItem('analyzed_ads');
+        const stored = localStorage.getItem('analyzed_ads_mvp2');
         if (stored) {
             try { ads = JSON.parse(stored); } catch(e){ ads = []; }
         }
     }
 
     function saveAds() {
-        localStorage.setItem('analyzed_ads', JSON.stringify(ads));
+        localStorage.setItem('analyzed_ads_mvp2', JSON.stringify(ads));
         updateUI();
+    }
+
+    function loadUserProfile() {
+        const stored = localStorage.getItem('user_profile_mvp2');
+        if (stored) {
+            try { userProfile = JSON.parse(stored); } catch(e){ userProfile = null; }
+        }
+    }
+
+    function saveUserProfile() {
+        localStorage.setItem('user_profile_mvp2', JSON.stringify(userProfile));
     }
 
     // Tab Navigation
@@ -268,44 +349,45 @@
         document.getElementById('tab-' + tab).classList.remove('hidden');
         document.querySelector(`[data-tab="${tab}"]`).classList.add('tab-active');
         document.querySelector(`[data-tab="${tab}"]`).classList.remove('tab-inactive');
+        
         if (tab === 'insights') updateInsights();
-        if (tab === 'list') updateListView();
+        else if (tab === 'list') updateListView();
+        else if (tab === 'matching') updateMatchingView();
     }
 
     // Generate Demo Analysis
     function generateDemoAnalysis(category, description) {
-        const randomScore = () => Math.floor(Math.random() * 200) - 100;
+        const randomScore = () => Math.floor(Math.random() * 100);
         const pickRandom = (arr, count) => {
             const shuffled = [...arr].sort(() => 0.5 - Math.random());
             return shuffled.slice(0, count);
         };
 
         const allAttrs = [...ATTRIBUTES.werte, ...ATTRIBUTES.emotional, ...ATTRIBUTES.aesthetik];
-        const topAttrs = pickRandom(allAttrs, 3);
-        const redFlags = Math.random() > 0.5 ? pickRandom(allAttrs, 2) : [];
+        const dominant = pickRandom(allAttrs, 5);
+        const weak = pickRandom(allAttrs.filter(a => !dominant.includes(a)), 2);
 
         const attributes = {};
         Object.keys(ATTRIBUTES).forEach(group => {
             attributes[group] = {};
             ATTRIBUTES[group].forEach(attr => {
-                const score = randomScore();
                 attributes[group][attr] = {
-                    score,
-                    type: score > 50 ? 'strength' : score < -50 ? 'red_flag' : 'neutral',
-                    reason: 'Demo-Analyse'
+                    score: randomScore(),
+                    reasoning: 'Demo-Analyse'
                 };
             });
         });
 
         return {
-            summary: `Demo-Analyse für ${category}: ${description.substring(0, 100)}...`,
-            top_attributes: topAttrs,
-            red_flags: redFlags,
+            summary: `Demo-Profil für ${category}: ${description.substring(0, 100)}...`,
+            dominant_attributes: dominant,
+            weak_attributes: weak,
+            intensity: ['niedrig', 'mittel', 'hoch'][Math.floor(Math.random() * 3)],
             attributes
         };
     }
 
-    // Analyze Ad
+    // Analyze Ad with Backend
     async function analyzeAd() {
         const brand = document.getElementById('brand').value.trim();
         const category = document.getElementById('category').value;
@@ -320,7 +402,7 @@
 
         const btn = document.getElementById('analyzeBtn');
         btn.disabled = true;
-        btn.textContent = '⏳ Analysiere...';
+        btn.textContent = '⏳ Erstelle Profil...';
 
         try {
             let analysis;
@@ -380,17 +462,202 @@
             document.getElementById('url').value = '';
             document.getElementById('description').value = '';
 
-            alert('✅ Werbung analysiert und gespeichert!');
+            alert('✅ Attribut-Profil erstellt und gespeichert!');
 
         } catch (error) {
             console.error(error);
             alert('❌ Fehler: ' + error.message);
         } finally {
             btn.disabled = false;
-            btn.textContent = '🚀 Analysieren';
+            btn.textContent = '🚀 Attribut-Profil erstellen';
         }
     }
 
+    // Build User Profile Editor
+    function buildUserProfileEditor() {
+        const container = document.getElementById('userProfileEditor');
+        
+        let html = '';
+        
+        Object.keys(ATTRIBUTES).forEach(group => {
+            html += `
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold mb-3 capitalize">${group}</h3>
+                    <div class="space-y-3">
+            `;
+            
+            ATTRIBUTES[group].forEach(attr => {
+                const currentValue = userProfile && userProfile.attributes && userProfile.attributes[group] 
+                    ? userProfile.attributes[group][attr] 
+                    : 50;
+                
+                html += `
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <label class="text-sm text-gray-700">${attr.replace(/_/g, ' ')}</label>
+                            <span class="text-sm font-bold text-blue-600" id="value-${group}-${attr}">${currentValue}</span>
+                        </div>
+                        <input 
+                            type="range" 
+                            min="0" 
+                            max="100" 
+                            value="${currentValue}"
+                            class="attr-slider"
+                            data-group="${group}"
+                            data-attr="${attr}"
+                            oninput="updateSliderValue('${group}', '${attr}', this.value)"
+                        >
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+    }
+
+    // Update Slider Value Display
+    function updateSliderValue(group, attr, value) {
+        document.getElementById(`value-${group}-${attr}`).textContent = value;
+    }
+
+    // Save User Profile and Calculate Matches
+    function saveProfile() {
+        const attributes = {};
+        
+        Object.keys(ATTRIBUTES).forEach(group => {
+            attributes[group] = {};
+            ATTRIBUTES[group].forEach(attr => {
+                const slider = document.querySelector(`input[data-group="${group}"][data-attr="${attr}"]`);
+                attributes[group][attr] = parseInt(slider.value);
+            });
+        });
+        
+        userProfile = {
+            attributes,
+            timestamp: new Date().toLocaleString('de-DE')
+        };
+        
+        saveUserProfile();
+        calculateMatches();
+        alert('✅ Profil gespeichert! Matches berechnet.');
+    }
+
+    // Matching Algorithm
+    function calculateMatches() {
+        if (!userProfile || ads.length === 0) {
+            document.getElementById('noProfileState').classList.remove('hidden');
+            document.getElementById('matchesSection').classList.add('hidden');
+            return;
+        }
+
+        const matches = ads.map(ad => {
+            const score = calculateMatchScore(userProfile, ad);
+            return { ...ad, matchScore: score };
+        });
+
+        // Sort by match score
+        matches.sort((a, b) => b.matchScore - a.matchScore);
+
+        displayMatches(matches);
+    }
+
+    // Calculate Match Score
+    function calculateMatchScore(profile, ad) {
+        const weights = CATEGORY_WEIGHTS[ad.category] || { werte: 0.33, emotional: 0.33, aesthetik: 0.34 };
+        
+        let totalScore = 0;
+        let groupScores = {};
+        
+        Object.keys(ATTRIBUTES).forEach(group => {
+            let groupScore = 0;
+            let count = 0;
+            
+            ATTRIBUTES[group].forEach(attr => {
+                const userValue = profile.attributes[group][attr];
+                const adValue = ad.analysis.attributes[group][attr].score;
+                
+                // Calculate similarity (0-100)
+                const diff = Math.abs(userValue - adValue);
+                const similarity = 100 - diff;
+                
+                groupScore += similarity;
+                count++;
+            });
+            
+            groupScores[group] = groupScore / count;
+        });
+        
+        // Apply category weights
+        totalScore = (groupScores.werte * weights.werte) +
+                     (groupScores.emotional * weights.emotional) +
+                     (groupScores.aesthetik * weights.aesthetik);
+        
+        return Math.round(totalScore);
+    }
+
+    // Display Matches
+    function displayMatches(matches) {
+        document.getElementById('noProfileState').classList.add('hidden');
+        document.getElementById('matchesSection').classList.remove('hidden');
+        
+        const container = document.getElementById('matchesContainer');
+        
+        if (matches.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-center py-8">Keine Werbungen zum Matchen vorhanden.</p>';
+            return;
+        }
+        
+        container.innerHTML = matches.map(ad => {
+            const matchClass = ad.matchScore >= 80 ? 'bg-green-100 text-green-800' : 
+                              ad.matchScore >= 60 ? 'bg-blue-100 text-blue-800' : 
+                              'bg-gray-100 text-gray-800';
+            
+            return `
+                <div class="border-2 rounded-xl p-4 mb-4">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h3 class="font-bold text-lg">${ad.brand}</h3>
+                            <p class="text-sm text-gray-600">${ad.category}</p>
+                        </div>
+                        <div class="match-badge ${matchClass} px-4 py-2 rounded-full">
+                            <span class="font-bold text-lg">${ad.matchScore}%</span>
+                            <span class="text-xs ml-1">Match</span>
+                        </div>
+                    </div>
+                    
+                    <p class="text-sm text-gray-700 mb-3">${ad.analysis.summary}</p>
+                    
+                    <div class="flex gap-2 flex-wrap mb-3">
+                        ${ad.analysis.dominant_attributes.slice(0, 5).map(attr => `
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">${attr}</span>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="text-xs text-gray-500">
+                        Intensität: ${ad.analysis.intensity} • CTR: ${ad.ctr}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Update Matching View
+    function updateMatchingView() {
+        if (userProfile) {
+            calculateMatches();
+        } else {
+            document.getElementById('noProfileState').classList.remove('hidden');
+            document.getElementById('matchesSection').classList.add('hidden');
+        }
+    }
+
+    // Weiter mit Teil 3...
+</script>
     // AI Analysis
     async function performAiAnalysis() {
         const query = document.getElementById('aiQueryInput').value.trim();
@@ -442,11 +709,18 @@
 
             } catch (apiError) {
                 console.log('Backend Fehler:', apiError.message);
+                
+                // Simple Demo Response
+                const intensityCount = {};
+                ads.forEach(ad => {
+                    intensityCount[ad.analysis.intensity] = (intensityCount[ad.analysis.intensity] || 0) + 1;
+                });
+                
                 response = `📊 Datenübersicht für: "${query}"
 
 • Gesamt Werbungen: ${ads.length}
 • Kategorien: ${new Set(ads.map(a => a.category)).size}
-• Durchschnittliche Red Flags: ${(ads.reduce((sum, ad) => sum + (ad.analysis.red_flags?.length || 0), 0) / ads.length).toFixed(1)}
+• Intensitäten: ${Object.entries(intensityCount).map(([k,v]) => `${k} (${v})`).join(', ')}
 
 ⚠️ Backend nicht erreichbar - stelle sicher dass dein Backend läuft.
 Demo-Daten angezeigt.`;
@@ -476,7 +750,7 @@ Demo-Daten angezeigt.`;
         if (confirm('ALLE Werbungen löschen?')) {
             if (confirm('Wirklich sicher?')) {
                 ads = [];
-                localStorage.removeItem('analyzed_ads');
+                localStorage.removeItem('analyzed_ads_mvp2');
                 updateUI();
                 alert('✅ Alle Daten gelöscht!');
             }
@@ -509,13 +783,18 @@ Demo-Daten angezeigt.`;
                         <div class="border-2 rounded-xl p-4">
                             <h3 class="font-bold text-lg">${ad.brand}</h3>
                             <p class="text-sm text-gray-600">${ad.category}</p>
-                            <div class="flex items-center gap-2 mt-2">
-                                <span class="text-xs">CTR: ${ad.ctr}</span>
+                            <div class="text-xs mt-2">
+                                <span class="font-semibold">Intensität:</span> ${ad.analysis.intensity}
                             </div>
-                            ${ad.analysis.red_flags?.length > 0 ? `
+                            <div class="flex gap-1 flex-wrap mt-2">
+                                ${ad.analysis.dominant_attributes.slice(0, 3).map(attr => `
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">${attr}</span>
+                                `).join('')}
+                            </div>
+                            ${ad.analysis.weak_attributes?.length > 0 ? `
                                 <div class="flex gap-1 flex-wrap mt-2">
-                                    ${ad.analysis.red_flags.slice(0, 2).map(f => `
-                                        <span class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full">${f}</span>
+                                    ${ad.analysis.weak_attributes.map(attr => `
+                                        <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">↓${attr}</span>
                                     `).join('')}
                                 </div>
                             ` : ''}
@@ -534,37 +813,43 @@ Demo-Daten angezeigt.`;
         if (ads.length === 0) {
             document.getElementById('stats-total').textContent = '0';
             document.getElementById('stats-categories').textContent = '0';
-            document.getElementById('stats-redflags').textContent = '0';
+            document.getElementById('stats-intensity').textContent = '-';
             return;
         }
 
         const categories = new Set(ads.map(ad => ad.category)).size;
-        const avgRedFlags = (ads.reduce((sum, ad) => sum + (ad.analysis.red_flags?.length || 0), 0) / ads.length).toFixed(1);
+        
+        // Calculate average intensity
+        const intensityMap = { 'niedrig': 1, 'mittel': 2, 'hoch': 3 };
+        const avgIntensity = ads.reduce((sum, ad) => sum + (intensityMap[ad.analysis.intensity] || 2), 0) / ads.length;
+        const intensityLabel = avgIntensity < 1.5 ? 'niedrig' : avgIntensity < 2.5 ? 'mittel' : 'hoch';
 
         document.getElementById('stats-total').textContent = ads.length;
         document.getElementById('stats-categories').textContent = categories;
-        document.getElementById('stats-redflags').textContent = avgRedFlags;
+        document.getElementById('stats-intensity').textContent = intensityLabel;
 
-        const redFlagCount = {};
+        // Count dominant attributes
+        const attrCount = {};
         ads.forEach(ad => {
-            (ad.analysis.red_flags || []).forEach(flag => {
-                redFlagCount[flag] = (redFlagCount[flag] || 0) + 1;
+            (ad.analysis.dominant_attributes || []).forEach(attr => {
+                attrCount[attr] = (attrCount[attr] || 0) + 1;
             });
         });
 
-        const topRedFlags = Object.entries(redFlagCount)
+        const topAttrs = Object.entries(attrCount)
             .sort((a, b) => b[1] - a[1])
             .slice(0, 5);
 
-        document.getElementById('topRedFlagsContainer').innerHTML = topRedFlags.length > 0
-            ? topRedFlags.map(([flag, count]) => `
-                <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg">
-                    <span class="font-medium">${flag}</span>
-                    <span class="px-3 py-1 bg-red-200 text-red-800 rounded-full text-sm font-bold">${count}x</span>
+        document.getElementById('topAttributesContainer').innerHTML = topAttrs.length > 0
+            ? topAttrs.map(([attr, count]) => `
+                <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                    <span class="font-medium">${attr}</span>
+                    <span class="px-3 py-1 bg-blue-200 text-blue-800 rounded-full text-sm font-bold">${count}x</span>
                 </div>
             `).join('')
-            : '<p class="text-gray-500 text-sm">Keine Red Flags gefunden</p>';
+            : '<p class="text-gray-500 text-sm">Keine Daten</p>';
 
+        // Category Chart
         const categoryData = {};
         ads.forEach(ad => {
             categoryData[ad.category] = (categoryData[ad.category] || 0) + 1;
@@ -578,7 +863,7 @@ Demo-Daten angezeigt.`;
                 labels: Object.keys(categoryData),
                 datasets: [{
                     data: Object.values(categoryData),
-                    backgroundColor: ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4', '#6366f1', '#f97316']
+                    backgroundColor: ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4', '#6366f1', '#f97316', '#14b8a6', '#a855f7']
                 }]
             },
             options: {
@@ -589,17 +874,7 @@ Demo-Daten angezeigt.`;
             }
         });
 
-        const attrCount = {};
-        ads.forEach(ad => {
-            (ad.analysis.top_attributes || []).forEach(attr => {
-                attrCount[attr] = (attrCount[attr] || 0) + 1;
-            });
-        });
-
-        const topAttrs = Object.entries(attrCount)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 8);
-
+        // Attributes Chart
         if (attributesChart) attributesChart.destroy();
         const ctxAttr = document.getElementById('attributesChart').getContext('2d');
         attributesChart = new Chart(ctxAttr, {
@@ -609,7 +884,7 @@ Demo-Daten angezeigt.`;
                 datasets: [{
                     label: 'Häufigkeit',
                     data: topAttrs.map(([, count]) => count),
-                    backgroundColor: '#22c55e'
+                    backgroundColor: '#3b82f6'
                 }]
             },
             options: {
@@ -635,7 +910,7 @@ Demo-Daten angezeigt.`;
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'werbung_analyse_' + new Date().toISOString().split('T')[0] + '.json';
+        a.download = 'werbung_analyse_mvp2_' + new Date().toISOString().split('T')[0] + '.json';
         a.click();
         alert('✅ JSON exportiert!');
     }
@@ -681,6 +956,7 @@ Demo-Daten angezeigt.`;
         document.getElementById('adCount').textContent = ads.length;
         if (currentTab === 'list') updateListView();
         else if (currentTab === 'insights') updateInsights();
+        else if (currentTab === 'matching') updateMatchingView();
     }
 
     // Event Listeners
@@ -695,12 +971,10 @@ Demo-Daten angezeigt.`;
         document.getElementById('closeAiResponse').addEventListener('click', () => {
             document.getElementById('aiResponseContainer').classList.add('hidden');
         });
+        document.getElementById('saveProfileBtn').addEventListener('click', saveProfile);
         
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => switchTab(btn.dataset.tab));
         });
     });
-</script>
-
-</body>
-</html>
+</script></body></html>
