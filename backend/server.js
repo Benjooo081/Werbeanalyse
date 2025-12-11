@@ -95,10 +95,15 @@ app.post('/api/analyze', async (req, res) => {
             });
         }
 
-        const prompt = `Du bist ein Experte für Werbeanalyse und erstellst detaillierte Attribut-Profile für ein Matching-System.
+        const prompt = `Du bist ein neutraler Datenanalyst für ein Matching-System. Deine EINZIGE Aufgabe ist es, die INTENSITÄT von Attributen in Werbungen zu messen - KEINE Bewertung, KEINE Verbesserungsvorschläge!
 
-WICHTIG: Dies ist KEINE Bewertung ob die Werbung gut oder schlecht ist! 
-Du misst nur die INTENSITÄT jedes Attributs auf einer Skala von 0-100.
+KONTEXT: Diese Analyse wird für ein MATCHING-SYSTEM verwendet, das Werbungen mit User-Profilen matched. 
+DEINE AUFGABE: Messe objektiv die Intensität jeder Eigenschaft.
+
+WICHTIG:
+❌ NICHT: "Diese Werbung sollte X verbessern"
+❌ NICHT: "Das ist gut/schlecht"
+✅ NUR: "Attribut X ist zu Y% präsent"
 
 Werbung:
 Brand: ${brand || 'Unbekannt'}
@@ -106,20 +111,22 @@ Kategorie: ${category}
 CTR: ${ctr || 'N/A'}
 Beschreibung: ${description}
 
-Erstelle ein Attribut-Profil. Bewerte für JEDES Attribut:
-- 0 = Attribut ist gar nicht präsent
-- 50 = Attribut ist moderat präsent  
-- 100 = Attribut ist sehr dominant
+BEWERTUNGSSKALA (0-100):
+- 0-20: Attribut nicht/kaum vorhanden
+- 21-40: Leicht vorhanden
+- 41-60: Moderat vorhanden
+- 61-80: Stark vorhanden
+- 81-100: Sehr dominant/zentral
 
-Antworte NUR mit diesem exakten JSON-Format (keine zusätzlichen Texte):
+Antworte NUR mit diesem exakten JSON (KEINE zusätzlichen Texte, KEINE Markdown-Blöcke):
 {
-  "summary": "Kurze neutrale Beschreibung der Werbung in 1-2 Sätzen",
-  "dominant_attributes": ["attr1", "attr2", "attr3", "attr4", "attr5"],
-  "weak_attributes": ["attr1", "attr2"],
+  "summary": "Neutrale 1-Satz Beschreibung was die Werbung kommuniziert",
+  "dominant_attributes": ["attr1", "attr2", "attr3", "attr4", "attr5", "attr6", "attr7", "attr8", "attr9", "attr10", "attr11", "attr12", "attr13", "attr14", "attr15", "attr16", "attr17", "attr18", "attr19", "attr20"],
+  "weak_attributes": ["attr1", "attr2", "attr3", "attr4", "attr5"],
   "intensity": "niedrig|mittel|hoch",
   "attributes": {
     "werte": {
-      "nachhaltigkeit": {"score": 0, "reasoning": "kurz"},
+      "nachhaltigkeit": {"score": 0, "reasoning": "Warum dieser Score? (max 10 Wörter)"},
       "familie": {"score": 0, "reasoning": "kurz"},
       "individualitaet": {"score": 0, "reasoning": "kurz"},
       "erfolg_leistung": {"score": 0, "reasoning": "kurz"},
@@ -169,11 +176,13 @@ Antworte NUR mit diesem exakten JSON-Format (keine zusätzlichen Texte):
   }
 }
 
-WICHTIG: 
-- dominant_attributes = Top 5 stärkste Attribute (höchste Scores)
-- weak_attributes = 2 schwächste Attribute die normalerweise erwartet würden
-- intensity = Gesamteindruck wie stark die Werbung kommuniziert (niedrig/mittel/hoch)
-- Sei objektiv und neutral - keine Bewertung ob gut/schlecht!`;
+PFLICHTFELDER:
+- "dominant_attributes": EXAKT 20 Attribute mit höchsten Scores (sortiert)
+- "weak_attributes": EXAKT 5 Attribute mit niedrigsten Scores
+- "intensity": "niedrig" (Ø<40), "mittel" (Ø 40-70), "hoch" (Ø>70)
+- "summary": Neutrale Beschreibung OHNE Bewertung
+
+DENKE DARAN: Du erstellst ein PROFIL zum MATCHEN, NICHT zur Verbesserung!`;
 
         console.log('📡 Sende Anfrage an Anthropic API...');
 
