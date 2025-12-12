@@ -131,14 +131,29 @@ Beschreibung: ${description}
 
 ═══════════════════════════════════════════════════════════
 
-SCORING METHODIK (0-100):
+SCORING METHODIK (0-100 + Direction):
+
+SCORE (Intensität):
 - 0-20:   Attribut nicht vorhanden oder nur implizit erwähnt
 - 21-40:  Attribut leicht angedeutet, nicht zentral
 - 41-60:  Attribut moderat präsent, erkennbar
 - 61-80:  Attribut stark präsent, wichtiger Teil der Message
 - 81-100: Attribut dominiert die Werbung, ist Kern-Element
 
-WICHTIG: Score basiert AUSSCHLIESSLICH auf WAS IST, NICHT auf was sein sollte!
+DIRECTION (Polarität):
+- "positive": Attribut wird POSITIV/FÖRDERND dargestellt
+- "negative": Attribut wird NEGATIV/SCHÄDLICH dargestellt  
+- "neutral":  Attribut ist wertfrei oder nicht anwendbar
+
+WICHTIG: Score = Intensität, Direction = Ausrichtung!
+
+BEISPIELE:
+- McDonald's + Gesundheit = {score: 70, direction: "negative"} → Stark präsent aber ungesund
+- Bio-Laden + Gesundheit = {score: 85, direction: "positive"} → Stark präsent und gesund
+- Laptop + Gesundheit = {score: 10, direction: "neutral"} → Kaum relevant
+- Tesla + Innovation = {score: 95, direction: "positive"} → Sehr innovativ
+- Alte Bank + Innovation = {score: 20, direction: "negative"} → Bewusst traditionell/anti-innovativ
+- Zigaretten + Gesundheit = {score: 90, direction: "negative"} → SEHR relevant aber schädlich
 
 ═══════════════════════════════════════════════════════════
 
@@ -164,52 +179,52 @@ OUTPUT FORMAT (NUR JSON, KEINE anderen Texte):
   "intensity": "niedrig|mittel|hoch",
   "attributes": {
     "werte": {
-      "nachhaltigkeit": {"score": 0, "reasoning": "WAS vorhanden ist, max 10 Wörter"},
-      "familie": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "individualitaet": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "erfolg_leistung": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "sicherheit": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "freiheit": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "tradition": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "innovation": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "gemeinschaft": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "gesundheit": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "authentizitaet": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "luxus": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "pragmatismus": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "abenteuer": {"score": 0, "reasoning": "WAS vorhanden ist"}
+      "nachhaltigkeit": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist, max 10 Wörter"},
+      "familie": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "individualitaet": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "erfolg_leistung": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "sicherheit": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "freiheit": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "tradition": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "innovation": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "gemeinschaft": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "gesundheit": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "authentizitaet": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "luxus": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "pragmatismus": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "abenteuer": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"}
     },
     "emotional": {
-      "humor": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "nostalgie": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "inspiration": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "vertrauen": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "ueberraschung": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "freude": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "stolz": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "neugier": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "empathie": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "aufregung": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "entspannung": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "rebellion": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "dringlichkeit": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "hoffnung": {"score": 0, "reasoning": "WAS vorhanden ist"}
+      "humor": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "nostalgie": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "inspiration": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "vertrauen": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "ueberraschung": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "freude": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "stolz": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "neugier": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "empathie": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "aufregung": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "entspannung": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "rebellion": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "dringlichkeit": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "hoffnung": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"}
     },
     "aesthetik": {
-      "minimalistisch": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "luxurioes": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "verspielt": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "professionell": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "natuerlich": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "technologisch": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "vintage": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "urban": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "rustikal": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "elegant": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "dynamisch": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "ruhig": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "kuenstlerisch": {"score": 0, "reasoning": "WAS vorhanden ist"},
-      "dokumentarisch": {"score": 0, "reasoning": "WAS vorhanden ist"}
+      "minimalistisch": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "luxurioes": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "verspielt": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "professionell": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "natuerlich": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "technologisch": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "vintage": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "urban": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "rustikal": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "elegant": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "dynamisch": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "ruhig": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "kuenstlerisch": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"},
+      "dokumentarisch": {"score": 0, "direction": "positive|negative|neutral", "reasoning": "WAS vorhanden ist"}
     }
   }
 }
