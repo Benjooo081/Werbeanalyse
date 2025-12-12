@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Werbeanalyse MVP2.3 - Full ML Ready</title>
+    <title>Werbeanalyse MVP2.5 - Enhanced Viz</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -74,8 +74,8 @@
     <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-4 md:mb-6">
         <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
             <div>
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Werbeanalyse MVP2.3</h1>
-                <p class="text-sm md:text-base text-gray-600">Psychographie • ML-Ready 🧠</p>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Werbeanalyse MVP2.5</h1>
+                <p class="text-sm md:text-base text-gray-600">Neural Net • Heatmap • Direction • ML-Ready 🧠</p>
             </div>
             <div class="flex gap-2 flex-wrap">
                 <div class="bg-green-100 px-4 py-2 rounded-lg flex items-center gap-2">
@@ -160,7 +160,9 @@
             </div>
             <div id="aiResponseText" class="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap"></div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        
+        <!-- Quick Stats + Direction -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div class="bg-white rounded-2xl shadow-xl p-6">
                 <h3 class="text-lg font-bold mb-4">📈 Statistiken</h3>
                 <div class="space-y-3">
@@ -170,14 +172,34 @@
                     <div class="flex justify-between"><span class="text-gray-600">ML Ready:</span><span class="font-bold" id="stats-ml-ready">0</span></div>
                 </div>
             </div>
+            <div class="bg-white rounded-2xl shadow-xl p-6 md:col-span-2">
+                <h3 class="text-lg font-bold mb-4">🎯 Direction Dashboard</h3>
+                <div id="directionContainer" class="max-h-64 overflow-y-auto"></div>
+            </div>
+        </div>
+        
+        <!-- Heatmap (Main) -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 mb-4">
+            <h3 class="text-lg font-bold mb-4">🔥 Attribut-Heatmap</h3>
+            <div id="heatmapContainer"></div>
+        </div>
+        
+        <!-- Scatter + Attributes -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div class="bg-white rounded-2xl shadow-xl p-6">
-                <h3 class="text-lg font-bold mb-4">🔥 Top Attribute</h3>
+                <h3 class="text-lg font-bold mb-4">📍 Scatter: Intensität × Match</h3>
+                <div id="scatterContainer"></div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-xl p-6">
+                <h3 class="text-lg font-bold mb-4">⭐ Top Attribute</h3>
                 <div id="topAttributesContainer" class="space-y-2"></div>
             </div>
         </div>
+        
+        <!-- Charts -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="bg-white rounded-2xl shadow-xl p-6"><h3 class="text-lg font-bold mb-4">📊 Kategorie</h3><canvas id="categoryChart"></canvas></div>
-            <div class="bg-white rounded-2xl shadow-xl p-6"><h3 class="text-lg font-bold mb-4">🎯 Attribute</h3><canvas id="attributesChart"></canvas></div>
+            <div class="bg-white rounded-2xl shadow-xl p-6"><h3 class="text-lg font-bold mb-4">🎯 Häufigste Attribute</h3><canvas id="attributesChart"></canvas></div>
         </div>
     </div>
 
@@ -828,6 +850,49 @@ function clearAllData() {
     }
 }
 
+function generateNeuralViz(ad) {
+    const allScores = [];
+    ['werte', 'emotional', 'aesthetik'].forEach(group => {
+        Object.entries(ad.analysis.attributes[group]).forEach(([attr, data]) => {
+            allScores.push({
+                attr,
+                score: data.score || 0,
+                direction: data.direction || 'positive'
+            });
+        });
+    });
+    
+    const top5 = allScores.sort((a, b) => b.score - a.score).slice(0, 5);
+    
+    const nodes = top5.map((item, i) => {
+        const x = 20 + (i * 50);
+        const y = 30;
+        const radius = 8 + (item.score / 100) * 12;
+        const color = item.direction === 'positive' ? '#10b981' : 
+                      item.direction === 'negative' ? '#ef4444' : '#6b7280';
+        
+        return `
+            <circle cx="${x}" cy="${y}" r="${radius}" fill="${color}" opacity="0.6"/>
+            <text x="${x}" y="${y + 25}" font-size="8" text-anchor="middle" fill="#374151">${item.attr.substring(0, 6)}</text>
+        `;
+    }).join('');
+    
+    const connections = [];
+    for (let i = 0; i < top5.length - 1; i++) {
+        const x1 = 20 + (i * 50);
+        const x2 = 20 + ((i + 1) * 50);
+        const thickness = Math.min(top5[i].score, top5[i + 1].score) / 50;
+        connections.push(`<line x1="${x1}" y1="30" x2="${x2}" y2="30" stroke="#cbd5e1" stroke-width="${thickness}" opacity="0.4"/>`);
+    }
+    
+    return `
+        <svg width="280" height="55" class="mx-auto">
+            ${connections.join('')}
+            ${nodes}
+        </svg>
+    `;
+}
+
 function updateListView() {
     if (ads.length === 0) {
         document.getElementById('emptyState').classList.remove('hidden');
@@ -845,24 +910,243 @@ function updateListView() {
 
     const container = document.getElementById('categoriesContainer');
     container.innerHTML = Object.entries(grouped).map(([cat, catAds]) => `
-        <div class="border-2 rounded-xl mb-4 p-4">
-            <h3 class="font-bold text-lg mb-3">${cat} (${catAds.length})</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="border-2 rounded-xl mb-4 p-4 bg-white">
+            <h3 class="font-bold text-xl mb-4 text-gray-800">${cat} <span class="text-gray-500 font-normal text-base">(${catAds.length})</span></h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 ${catAds.map(ad => {
                     const rating = userRatings[ad.id];
-                    return `<div class="border-2 rounded-xl p-4"><h3 class="font-bold text-lg">${ad.brand}</h3><p class="text-sm text-gray-600">${ad.category}</p><div class="text-xs mt-2"><span class="font-semibold">Intensität:</span> ${ad.analysis.intensity}${rating ? `<br><span class="font-semibold">Rating:</span> ⭐ ${rating}/10` : ''}</div><div class="flex gap-1 flex-wrap mt-2">${ad.analysis.dominant_attributes.slice(0, 3).map(attr => `<span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">${attr}</span>`).join('')}</div>${ad.analysis.weak_attributes?.length > 0 ? `<div class="flex gap-1 flex-wrap mt-2">${ad.analysis.weak_attributes.slice(0,2).map(attr => `<span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">↓${attr}</span>`).join('')}</div>` : ''}<button onclick="deleteAd(${ad.id})" class="mt-3 w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 font-bold">🗑️ Löschen</button></div>`;
+                    const matchScore = userProfile ? calculateMatchScore(userProfile, ad) : null;
+                    
+                    return `
+                        <div class="border-2 rounded-xl p-4 bg-gradient-to-br from-white to-gray-50 hover:shadow-lg transition-shadow relative">
+                            <button onclick="deleteAd(${ad.id})" 
+                                    class="absolute top-2 right-2 w-6 h-6 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-all text-xs"
+                                    title="Löschen">
+                                🗑️
+                            </button>
+                            
+                            <div class="mb-3 pr-8">
+                                <h3 class="font-bold text-lg text-gray-800">${ad.brand}</h3>
+                                <p class="text-xs text-gray-500">${ad.category}</p>
+                            </div>
+                            
+                            <div class="mb-3 bg-gray-50 rounded-lg py-2 border border-gray-200">
+                                ${generateNeuralViz(ad)}
+                            </div>
+                            
+                            <div class="flex justify-between items-center mb-3 text-xs">
+                                <div class="flex gap-2">
+                                    <span class="px-2 py-1 rounded ${
+                                        ad.analysis.intensity === 'hoch' ? 'bg-red-100 text-red-700' :
+                                        ad.analysis.intensity === 'mittel' ? 'bg-yellow-100 text-yellow-700' :
+                                        'bg-green-100 text-green-700'
+                                    }">${ad.analysis.intensity}</span>
+                                    ${matchScore !== null ? `
+                                        <span class="px-2 py-1 rounded ${
+                                            matchScore >= 80 ? 'bg-green-100 text-green-700' :
+                                            matchScore >= 60 ? 'bg-blue-100 text-blue-700' :
+                                            'bg-gray-100 text-gray-700'
+                                        }">Match: ${matchScore}%</span>
+                                    ` : ''}
+                                </div>
+                                ${rating ? `<span class="text-yellow-600 font-bold">⭐ ${rating}/10</span>` : ''}
+                            </div>
+                            
+                            <div class="flex gap-1 flex-wrap">
+                                ${ad.analysis.dominant_attributes.slice(0, 3).map(attr => 
+                                    `<span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">${attr}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                    `;
                 }).join('')}
             </div>
         </div>
     `).join('');
 }
 
+// NEUE INSIGHTS FUNKTIONEN für MVP2.5
+// Diese Funktionen VOR updateInsights() einfügen
+
+function generateHeatmap() {
+    if (ads.length === 0) return '<p class="text-gray-500 text-center py-8">Keine Daten</p>';
+    
+    // Top 8 häufigste Attribute finden
+    const attrCount = {};
+    ads.forEach(ad => (ad.analysis.dominant_attributes || []).forEach(attr => {
+        attrCount[attr] = (attrCount[attr] || 0) + 1;
+    }));
+    const topAttrs = Object.entries(attrCount).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([attr]) => attr);
+    
+    if (topAttrs.length === 0) return '<p class="text-gray-500 text-center py-8">Keine Attribute</p>';
+    
+    // Heatmap HTML erstellen
+    let html = '<div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr><th class="p-2 text-left font-bold">Brand</th>';
+    topAttrs.forEach(attr => {
+        html += `<th class="p-2 text-center font-bold">${attr.substring(0, 8)}</th>`;
+    });
+    html += '</tr></thead><tbody>';
+    
+    ads.slice(0, 10).forEach(ad => {
+        html += `<tr class="border-t"><td class="p-2 font-medium">${ad.brand}</td>`;
+        
+        topAttrs.forEach(attr => {
+            // Finde Score für dieses Attribut
+            let score = 0;
+            let direction = 'neutral';
+            
+            ['werte', 'emotional', 'aesthetik'].forEach(group => {
+                if (ad.analysis.attributes[group][attr]) {
+                    score = ad.analysis.attributes[group][attr].score || 0;
+                    direction = ad.analysis.attributes[group][attr].direction || 'positive';
+                }
+            });
+            
+            // Farbe basierend auf Score und Direction
+            let bgColor = 'bg-gray-100';
+            let textColor = 'text-gray-700';
+            
+            if (direction === 'negative') {
+                if (score > 60) { bgColor = 'bg-red-200'; textColor = 'text-red-900'; }
+                else if (score > 30) { bgColor = 'bg-red-100'; textColor = 'text-red-700'; }
+            } else if (direction === 'positive') {
+                if (score > 80) { bgColor = 'bg-green-200'; textColor = 'text-green-900'; }
+                else if (score > 60) { bgColor = 'bg-green-100'; textColor = 'text-green-700'; }
+                else if (score > 40) { bgColor = 'bg-yellow-100'; textColor = 'text-yellow-700'; }
+            }
+            
+            html += `<td class="p-2 text-center ${bgColor} ${textColor} font-bold">${score}</td>`;
+        });
+        
+        html += '</tr>';
+    });
+    
+    html += '</tbody></table></div>';
+    html += '<div class="mt-3 flex gap-4 text-xs"><span class="flex items-center gap-1"><span class="w-4 h-4 bg-green-200 rounded"></span>Positiv hoch</span><span class="flex items-center gap-1"><span class="w-4 h-4 bg-yellow-100 rounded"></span>Positiv mittel</span><span class="flex items-center gap-1"><span class="w-4 h-4 bg-red-200 rounded"></span>Negativ hoch</span><span class="flex items-center gap-1"><span class="w-4 h-4 bg-gray-100 rounded"></span>Neutral/niedrig</span></div>';
+    
+    return html;
+}
+
+function generateDirectionDashboard() {
+    if (ads.length === 0) return '<p class="text-gray-500 text-center py-8">Keine Daten</p>';
+    
+    // Top 5 Attribute
+    const attrCount = {};
+    ads.forEach(ad => (ad.analysis.dominant_attributes || []).forEach(attr => {
+        attrCount[attr] = (attrCount[attr] || 0) + 1;
+    }));
+    const topAttrs = Object.entries(attrCount).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([attr]) => attr);
+    
+    if (topAttrs.length === 0) return '<p class="text-gray-500 text-center py-8">Keine Attribute</p>';
+    
+    let html = '';
+    
+    topAttrs.forEach(attr => {
+        const positive = [];
+        const negative = [];
+        const neutral = [];
+        
+        ads.forEach(ad => {
+            ['werte', 'emotional', 'aesthetik'].forEach(group => {
+                if (ad.analysis.attributes[group][attr]) {
+                    const data = ad.analysis.attributes[group][attr];
+                    const score = data.score || 0;
+                    const direction = data.direction || 'positive';
+                    
+                    if (score > 50) {
+                        if (direction === 'positive') positive.push({ brand: ad.brand, score });
+                        else if (direction === 'negative') negative.push({ brand: ad.brand, score });
+                        else neutral.push({ brand: ad.brand, score });
+                    }
+                }
+            });
+        });
+        
+        html += `<div class="border-2 rounded-lg p-3 mb-3">
+            <h4 class="font-bold text-sm mb-2 capitalize">${attr}</h4>`;
+        
+        if (positive.length > 0) {
+            html += `<div class="mb-2"><span class="text-green-600 font-bold text-xs">✅ Positiv (${positive.length}):</span> <span class="text-xs text-gray-700">${positive.slice(0, 3).map(p => `${p.brand} (${p.score})`).join(', ')}</span></div>`;
+        }
+        
+        if (negative.length > 0) {
+            html += `<div class="mb-2"><span class="text-red-600 font-bold text-xs">❌ Negativ (${negative.length}):</span> <span class="text-xs text-gray-700">${negative.slice(0, 3).map(p => `${p.brand} (${p.score})`).join(', ')}</span></div>`;
+        }
+        
+        if (neutral.length > 0) {
+            html += `<div><span class="text-gray-600 font-bold text-xs">⚪ Neutral (${neutral.length}):</span> <span class="text-xs text-gray-700">${neutral.slice(0, 2).map(p => `${p.brand} (${p.score})`).join(', ')}</span></div>`;
+        }
+        
+        html += '</div>';
+    });
+    
+    return html;
+}
+
+function generateScatterPlot() {
+    if (!userProfile || ads.length === 0) {
+        return '<p class="text-gray-500 text-center py-8">Erstelle User-Profil für Scatter Plot</p>';
+    }
+    
+    // Berechne für jede Ad: Avg Intensity und Match Score
+    const points = ads.map(ad => {
+        let totalScore = 0;
+        let count = 0;
+        
+        ['werte', 'emotional', 'aesthetik'].forEach(group => {
+            Object.values(ad.analysis.attributes[group]).forEach(data => {
+                totalScore += data.score || 0;
+                count++;
+            });
+        });
+        
+        const avgIntensity = count > 0 ? totalScore / count : 0;
+        const matchScore = calculateMatchScore(userProfile, ad);
+        
+        return {
+            brand: ad.brand,
+            x: avgIntensity,
+            y: matchScore
+        };
+    });
+    
+    // SVG Scatter Plot
+    const width = 280;
+    const height = 200;
+    const padding = 30;
+    
+    const dots = points.map(p => {
+        const x = padding + (p.x / 100) * (width - 2 * padding);
+        const y = height - padding - (p.y / 100) * (height - 2 * padding);
+        
+        return `<circle cx="${x}" cy="${y}" r="4" fill="#3b82f6" opacity="0.7"/>`;
+    }).join('');
+    
+    return `
+        <svg width="${width}" height="${height}" class="mx-auto border border-gray-200 rounded">
+            <!-- Grid -->
+            <line x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" stroke="#e5e7eb" stroke-width="2"/>
+            <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="#e5e7eb" stroke-width="2"/>
+            
+            <!-- Labels -->
+            <text x="${width / 2}" y="${height - 5}" font-size="10" text-anchor="middle" fill="#6b7280">Intensität →</text>
+            <text x="10" y="${height / 2}" font-size="10" text-anchor="middle" fill="#6b7280" transform="rotate(-90, 10, ${height / 2})">Match Score →</text>
+            
+            <!-- Dots -->
+            ${dots}
+        </svg>
+        <p class="text-xs text-gray-600 text-center mt-2">Jeder Punkt = 1 Ad | Intensität (X) vs Match-Score (Y)</p>
+    `;
+}
 function updateInsights() {
     if (ads.length === 0) {
         document.getElementById('stats-total').textContent = '0';
         document.getElementById('stats-categories').textContent = '0';
         document.getElementById('stats-intensity').textContent = '-';
         document.getElementById('stats-ml-ready').textContent = '0';
+        document.getElementById('heatmapContainer').innerHTML = '<p class="text-gray-500 text-center py-8">Keine Daten</p>';
+        document.getElementById('directionContainer').innerHTML = '<p class="text-gray-500 text-center py-4">Keine Daten</p>';
+        document.getElementById('scatterContainer').innerHTML = '<p class="text-gray-500 text-center py-8">Keine Daten</p>';
         return;
     }
 
@@ -877,6 +1161,11 @@ function updateInsights() {
     document.getElementById('stats-categories').textContent = categories;
     document.getElementById('stats-intensity').textContent = intensityLabel;
     document.getElementById('stats-ml-ready').textContent = mlReady;
+
+    // NEU: Befülle neue Visualisierungen
+    document.getElementById('heatmapContainer').innerHTML = generateHeatmap();
+    document.getElementById('directionContainer').innerHTML = generateDirectionDashboard();
+    document.getElementById('scatterContainer').innerHTML = generateScatterPlot();
 
     const attrCount = {};
     ads.forEach(ad => (ad.analysis.dominant_attributes || []).forEach(attr => attrCount[attr] = (attrCount[attr] || 0) + 1));
