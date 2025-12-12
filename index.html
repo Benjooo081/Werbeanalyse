@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="de">
 <head>
     <meta charset="UTF-8">
@@ -17,61 +16,58 @@
         .touch-card:active { transform: scale(0.98); }
         .tab-active { background: #2563eb; color: white; }
         .tab-inactive { background: #e5e7eb; color: #4b5563; }
-
-```
-    .attr-slider {
-        -webkit-appearance: none;
-        width: 100%;
-        height: 6px;
-        border-radius: 3px;
-        background: #e5e7eb;
-        outline: none;
-    }
-    .attr-slider::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #3b82f6;
-        cursor: pointer;
-        border: 2px solid white;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    
-    .match-badge {
-        background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
-    }
-    
-    .star-rating {
-        display: flex;
-        gap: 4px;
-    }
-    .star {
-        cursor: pointer;
-        font-size: 24px;
-        color: #d1d5db;
-        transition: color 0.2s;
-    }
-    .star:hover, .star.active {
-        color: #fbbf24;
-    }
-    
-    .collapsible-header {
-        cursor: pointer;
-        user-select: none;
-    }
-    .collapsible-content {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.5s ease-out;
-    }
-    .collapsible-content.open {
-        max-height: 8000px !important;
-    }
-</style>
-```
-
+        
+        .attr-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e5e7eb;
+            outline: none;
+        }
+        .attr-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .match-badge {
+            background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+        }
+        
+        .star-rating {
+            display: flex;
+            gap: 4px;
+        }
+        .star {
+            cursor: pointer;
+            font-size: 24px;
+            color: #d1d5db;
+            transition: color 0.2s;
+        }
+        .star:hover, .star.active {
+            color: #fbbf24;
+        }
+        
+        .collapsible-header {
+            cursor: pointer;
+            user-select: none;
+        }
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        .collapsible-content.open {
+            max-height: 8000px !important;
+        }
+    </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-4 md:p-6">
     <div class="max-w-7xl mx-auto">
@@ -100,200 +96,197 @@
         </div>
     </div>
 
-```
-<div id="tab-analyze" class="tab-content">
-    <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-4 md:mb-6">
-        <div class="grid grid-cols-3 gap-2 md:gap-3 mb-4">
-            <label class="flex-1 bg-green-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-green-600 cursor-pointer text-center touch-card">
-                📥 Import
-                <input type="file" id="importFile" accept=".json" class="hidden">
-            </label>
-            <button id="exportBtn" class="flex-1 bg-blue-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-blue-600 touch-card">📤 Export</button>
-            <button id="exportMLBtn" class="flex-1 bg-purple-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-purple-600 touch-card">🧠 ML</button>
+    <div id="tab-analyze" class="tab-content">
+        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-4 md:mb-6">
+            <div class="grid grid-cols-3 gap-2 md:gap-3 mb-4">
+                <label class="flex-1 bg-green-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-green-600 cursor-pointer text-center touch-card">
+                    📥 Import
+                    <input type="file" id="importFile" accept=".json" class="hidden">
+                </label>
+                <button id="exportBtn" class="flex-1 bg-blue-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-blue-600 touch-card">📤 Export</button>
+                <button id="exportMLBtn" class="flex-1 bg-purple-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-purple-600 touch-card">🧠 ML</button>
+            </div>
+            <button id="clearBtn" class="w-full bg-red-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-red-600 touch-card mb-4">🗑️ Alle löschen</button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                <input id="brand" placeholder="Brand" class="px-4 py-3 border-2 rounded-lg text-base">
+                <select id="category" class="px-4 py-3 border-2 rounded-lg text-base">
+                    <option value="">Kategorie wählen *</option>
+                    <option>Lebensmittel & Getränke</option>
+                    <option>Technologie & Elektronik</option>
+                    <option>Mode & Fashion</option>
+                    <option>Sport & Fitness</option>
+                    <option>Automotive</option>
+                    <option>Reisen & Tourismus</option>
+                    <option>Finanzen & Versicherungen</option>
+                    <option>Beauty & Kosmetik</option>
+                    <option>Haushalt & Wohnen</option>
+                    <option>Entertainment & Medien</option>
+                </select>
+                <input id="ctr" placeholder="CTR (z.B. 4.2%)" class="px-4 py-3 border-2 rounded-lg text-base">
+                <input id="url" placeholder="URL (optional)" class="px-4 py-3 border-2 rounded-lg text-base">
+            </div>
+            <textarea id="description" placeholder="Detaillierte Werbungsbeschreibung..." class="w-full px-4 py-3 border-2 rounded-lg mb-4 h-32 text-base"></textarea>
+            <button id="analyzeBtn" class="w-full bg-blue-600 text-white px-6 py-4 rounded-lg font-bold text-lg hover:bg-blue-700 touch-card">🚀 Attribut-Profil erstellen</button>
         </div>
-        <button id="clearBtn" class="w-full bg-red-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-red-600 touch-card mb-4">🗑️ Alle löschen</button>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-            <input id="brand" placeholder="Brand" class="px-4 py-3 border-2 rounded-lg text-base">
-            <select id="category" class="px-4 py-3 border-2 rounded-lg text-base">
-                <option value="">Kategorie wählen *</option>
-                <option>Lebensmittel & Getränke</option>
-                <option>Technologie & Elektronik</option>
-                <option>Mode & Fashion</option>
-                <option>Sport & Fitness</option>
-                <option>Automotive</option>
-                <option>Reisen & Tourismus</option>
-                <option>Finanzen & Versicherungen</option>
-                <option>Beauty & Kosmetik</option>
-                <option>Haushalt & Wohnen</option>
-                <option>Entertainment & Medien</option>
-            </select>
-            <input id="ctr" placeholder="CTR (z.B. 4.2%)" class="px-4 py-3 border-2 rounded-lg text-base">
-            <input id="url" placeholder="URL (optional)" class="px-4 py-3 border-2 rounded-lg text-base">
-        </div>
-        <textarea id="description" placeholder="Detaillierte Werbungsbeschreibung..." class="w-full px-4 py-3 border-2 rounded-lg mb-4 h-32 text-base"></textarea>
-        <button id="analyzeBtn" class="w-full bg-blue-600 text-white px-6 py-4 rounded-lg font-bold text-lg hover:bg-blue-700 touch-card">🚀 Attribut-Profil erstellen</button>
     </div>
-</div>
 
-<div id="tab-list" class="tab-content hidden">
-    <div id="adsList" class="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-4 md:mb-6 hidden">
-        <h2 class="text-2xl font-bold mb-4">Werbungen nach Kategorie</h2>
-        <div id="categoriesContainer"></div>
+    <div id="tab-list" class="tab-content hidden">
+        <div id="adsList" class="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-4 md:mb-6 hidden">
+            <h2 class="text-2xl font-bold mb-4">Werbungen nach Kategorie</h2>
+            <div id="categoriesContainer"></div>
+        </div>
+        <div id="emptyState" class="bg-white rounded-2xl shadow-xl p-12 text-center">
+            <div class="text-6xl mb-4">📊</div>
+            <h3 class="text-xl font-bold text-gray-600 mb-2">Keine Werbungen</h3>
+            <p class="text-gray-500">Analysiere deine erste Werbung oder importiere Daten</p>
+        </div>
     </div>
-    <div id="emptyState" class="bg-white rounded-2xl shadow-xl p-12 text-center">
-        <div class="text-6xl mb-4">📊</div>
-        <h3 class="text-xl font-bold text-gray-600 mb-2">Keine Werbungen</h3>
-        <p class="text-gray-500">Analysiere deine erste Werbung oder importiere Daten</p>
-    </div>
-</div>
 
-<div id="tab-insights" class="tab-content hidden">
-    <div class="bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl shadow-xl p-6 mb-4">
-        <h3 class="text-xl font-bold text-white mb-3 flex items-center gap-2"><span>🤖</span><span>KI-Datenanalyse</span></h3>
-        <p class="text-white text-sm mb-4 opacity-90">Stelle der KI Fragen zu deinen Werbedaten</p>
-        <div class="bg-white rounded-lg p-4 mb-3">
-            <textarea id="aiQueryInput" placeholder="z.B. 'Welche Werbungen haben die stärksten Attribute?'" class="w-full px-4 py-3 border-2 rounded-lg text-base h-24 resize-none"></textarea>
+    <div id="tab-insights" class="tab-content hidden">
+        <div class="bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl shadow-xl p-6 mb-4">
+            <h3 class="text-xl font-bold text-white mb-3 flex items-center gap-2"><span>🤖</span><span>KI-Datenanalyse</span></h3>
+            <p class="text-white text-sm mb-4 opacity-90">Stelle der KI Fragen zu deinen Werbedaten</p>
+            <div class="bg-white rounded-lg p-4 mb-3">
+                <textarea id="aiQueryInput" placeholder="z.B. 'Welche Werbungen haben die stärksten Attribute?'" class="w-full px-4 py-3 border-2 rounded-lg text-base h-24 resize-none"></textarea>
+            </div>
+            <button id="aiAnalyzeBtn" class="w-full bg-white text-purple-600 px-6 py-3 rounded-lg font-bold text-lg hover:bg-gray-50 touch-card flex items-center justify-center gap-2">
+                <span>✨</span><span>KI-Analyse starten</span>
+            </button>
         </div>
-        <button id="aiAnalyzeBtn" class="w-full bg-white text-purple-600 px-6 py-3 rounded-lg font-bold text-lg hover:bg-gray-50 touch-card flex items-center justify-center gap-2">
-            <span>✨</span><span>KI-Analyse starten</span>
-        </button>
-    </div>
-    <div id="aiResponseContainer" class="bg-white rounded-2xl shadow-xl p-6 mb-4 hidden">
-        <div class="flex justify-between items-start mb-4">
-            <h3 class="text-xl font-bold text-gray-800">🤖 KI-Antwort</h3>
-            <button id="closeAiResponse" class="text-gray-500 hover:text-gray-700 text-2xl leading-none">×</button>
+        <div id="aiResponseContainer" class="bg-white rounded-2xl shadow-xl p-6 mb-4 hidden">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-xl font-bold text-gray-800">🤖 KI-Antwort</h3>
+                <button id="closeAiResponse" class="text-gray-500 hover:text-gray-700 text-2xl leading-none">×</button>
+            </div>
+            <div id="aiResponseText" class="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap"></div>
         </div>
-        <div id="aiResponseText" class="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap"></div>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div class="bg-white rounded-2xl shadow-xl p-6">
-            <h3 class="text-lg font-bold mb-4">📈 Statistiken</h3>
-            <div class="space-y-3">
-                <div class="flex justify-between"><span class="text-gray-600">Gesamt:</span><span class="font-bold" id="stats-total">0</span></div>
-                <div class="flex justify-between"><span class="text-gray-600">Kategorien:</span><span class="font-bold" id="stats-categories">0</span></div>
-                <div class="flex justify-between"><span class="text-gray-600">Ø Intensität:</span><span class="font-bold" id="stats-intensity">-</span></div>
-                <div class="flex justify-between"><span class="text-gray-600">ML Ready:</span><span class="font-bold" id="stats-ml-ready">0</span></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="bg-white rounded-2xl shadow-xl p-6">
+                <h3 class="text-lg font-bold mb-4">📈 Statistiken</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between"><span class="text-gray-600">Gesamt:</span><span class="font-bold" id="stats-total">0</span></div>
+                    <div class="flex justify-between"><span class="text-gray-600">Kategorien:</span><span class="font-bold" id="stats-categories">0</span></div>
+                    <div class="flex justify-between"><span class="text-gray-600">Ø Intensität:</span><span class="font-bold" id="stats-intensity">-</span></div>
+                    <div class="flex justify-between"><span class="text-gray-600">ML Ready:</span><span class="font-bold" id="stats-ml-ready">0</span></div>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-xl p-6">
+                <h3 class="text-lg font-bold mb-4">🔥 Top Attribute</h3>
+                <div id="topAttributesContainer" class="space-y-2"></div>
             </div>
         </div>
-        <div class="bg-white rounded-2xl shadow-xl p-6">
-            <h3 class="text-lg font-bold mb-4">🔥 Top Attribute</h3>
-            <div id="topAttributesContainer" class="space-y-2"></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-white rounded-2xl shadow-xl p-6"><h3 class="text-lg font-bold mb-4">📊 Kategorie</h3><canvas id="categoryChart"></canvas></div>
+            <div class="bg-white rounded-2xl shadow-xl p-6"><h3 class="text-lg font-bold mb-4">🎯 Attribute</h3><canvas id="attributesChart"></canvas></div>
         </div>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="bg-white rounded-2xl shadow-xl p-6"><h3 class="text-lg font-bold mb-4">📊 Kategorie</h3><canvas id="categoryChart"></canvas></div>
-        <div class="bg-white rounded-2xl shadow-xl p-6"><h3 class="text-lg font-bold mb-4">🎯 Attribute</h3><canvas id="attributesChart"></canvas></div>
-    </div>
-</div>
 
-<div id="tab-matching" class="tab-content hidden">
-    <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-4">
-        <h2 class="text-2xl font-bold mb-4">👤 Dein Profil</h2>
-        
-        <div class="mb-6 border-2 border-gray-200 rounded-xl p-4">
-            <div class="collapsible-header flex justify-between items-center mb-4" onclick="toggleCollapse('demo')">
-                <h3 class="text-xl font-bold">📊 Demographie</h3>
-                <span id="demo-arrow" class="text-2xl">▼</span>
-            </div>
-            <div id="demo-content" class="collapsible-content open">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div><label class="text-sm font-semibold text-gray-700 mb-2 block">Alter</label>
-                        <input type="range" id="demo-age" min="18" max="80" value="30" class="attr-slider mb-2">
-                        <div class="text-center text-sm font-bold text-blue-600" id="demo-age-value">30 Jahre</div>
-                    </div>
-                    <div><label class="text-sm font-semibold text-gray-700 mb-2 block">Geschlecht</label>
-                        <select id="demo-gender" class="w-full px-4 py-2 border-2 rounded-lg">
-                            <option value="männlich">Männlich</option><option value="weiblich">Weiblich</option>
-                            <option value="divers">Divers</option><option value="keine_angabe">Keine Angabe</option>
-                        </select>
-                    </div>
-                    <div><label class="text-sm font-semibold text-gray-700 mb-2 block">Beziehungsstatus</label>
-                        <select id="demo-relationship" class="w-full px-4 py-2 border-2 rounded-lg">
-                            <option value="single">Single</option><option value="beziehung">In Beziehung</option>
-                            <option value="verheiratet">Verheiratet</option><option value="geschieden">Geschieden</option>
-                            <option value="verwitwet">Verwitwet</option>
-                        </select>
-                    </div>
-                    <div><label class="text-sm font-semibold text-gray-700 mb-2 block">Kinder</label>
-                        <div class="flex gap-2">
-                            <select id="demo-children" class="flex-1 px-4 py-2 border-2 rounded-lg">
-                                <option value="nein">Nein</option><option value="ja">Ja</option>
-                            </select>
-                            <input type="number" id="demo-children-count" min="0" max="10" value="0" class="w-20 px-4 py-2 border-2 rounded-lg" disabled>
+    <div id="tab-matching" class="tab-content hidden">
+        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-4">
+            <h2 class="text-2xl font-bold mb-4">👤 Dein Profil</h2>
+            
+            <div class="mb-6 border-2 border-gray-200 rounded-xl p-4">
+                <div class="collapsible-header flex justify-between items-center mb-4" onclick="toggleCollapse('demo')">
+                    <h3 class="text-xl font-bold">📊 Demographie</h3>
+                    <span id="demo-arrow" class="text-2xl">▼</span>
+                </div>
+                <div id="demo-content" class="collapsible-content open">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label class="text-sm font-semibold text-gray-700 mb-2 block">Alter</label>
+                            <input type="range" id="demo-age" min="18" max="80" value="30" class="attr-slider mb-2">
+                            <div class="text-center text-sm font-bold text-blue-600" id="demo-age-value">30 Jahre</div>
                         </div>
-                    </div>
-                    <div><label class="text-sm font-semibold text-gray-700 mb-2 block">Beschäftigung</label>
-                        <select id="demo-employment" class="w-full px-4 py-2 border-2 rounded-lg">
-                            <option value="angestellt">Angestellt</option><option value="freiberuflich">Freiberuflich</option>
-                            <option value="selbststaendig">Selbstständig</option><option value="student">Student</option>
-                            <option value="rentner">Rentner</option><option value="arbeitssuchend">Arbeitssuchend</option>
-                        </select>
-                    </div>
-                    <div><label class="text-sm font-semibold text-gray-700 mb-2 block">Einkommensklasse</label>
-                        <input type="range" id="demo-income" min="1" max="10" value="5" class="attr-slider mb-2">
-                        <div class="text-center text-sm font-bold text-blue-600" id="demo-income-value">5 / 10</div>
-                    </div>
-                    <div><label class="text-sm font-semibold text-gray-700 mb-2 block">Bildungsniveau</label>
-                        <select id="demo-education" class="w-full px-4 py-2 border-2 rounded-lg">
-                            <option value="hauptschule">Hauptschule</option><option value="mittlere_reife">Mittlere Reife</option>
-                            <option value="abitur">Abitur</option><option value="bachelor">Bachelor</option>
-                            <option value="master">Master</option><option value="promotion">Promotion</option>
-                        </select>
-                    </div>
-                    <div><label class="text-sm font-semibold text-gray-700 mb-2 block">Wohnort-Typ</label>
-                        <select id="demo-location" class="w-full px-4 py-2 border-2 rounded-lg">
-                            <option value="grossstadt">Großstadt (>500k)</option><option value="stadt">Stadt (50k-500k)</option>
-                            <option value="vorstadt">Vorstadt</option><option value="land">Land/Dorf</option>
-                        </select>
-                    </div>
-                    <div><label class="text-sm font-semibold text-gray-700 mb-2 block">Religion</label>
-                        <select id="demo-religion" class="w-full px-4 py-2 border-2 rounded-lg">
-                            <option value="keine">Keine</option><option value="christlich">Christlich</option>
-                            <option value="muslimisch">Muslimisch</option><option value="juedisch">Jüdisch</option>
-                            <option value="buddhistisch">Buddhistisch</option><option value="hindu">Hindu</option>
-                            <option value="andere">Andere</option>
-                        </select>
+                        <div><label class="text-sm font-semibold text-gray-700 mb-2 block">Geschlecht</label>
+                            <select id="demo-gender" class="w-full px-4 py-2 border-2 rounded-lg">
+                                <option value="männlich">Männlich</option><option value="weiblich">Weiblich</option>
+                                <option value="divers">Divers</option><option value="keine_angabe">Keine Angabe</option>
+                            </select>
+                        </div>
+                        <div><label class="text-sm font-semibold text-gray-700 mb-2 block">Beziehungsstatus</label>
+                            <select id="demo-relationship" class="w-full px-4 py-2 border-2 rounded-lg">
+                                <option value="single">Single</option><option value="beziehung">In Beziehung</option>
+                                <option value="verheiratet">Verheiratet</option><option value="geschieden">Geschieden</option>
+                                <option value="verwitwet">Verwitwet</option>
+                            </select>
+                        </div>
+                        <div><label class="text-sm font-semibold text-gray-700 mb-2 block">Kinder</label>
+                            <div class="flex gap-2">
+                                <select id="demo-children" class="flex-1 px-4 py-2 border-2 rounded-lg">
+                                    <option value="nein">Nein</option><option value="ja">Ja</option>
+                                </select>
+                                <input type="number" id="demo-children-count" min="0" max="10" value="0" class="w-20 px-4 py-2 border-2 rounded-lg" disabled>
+                            </div>
+                        </div>
+                        <div><label class="text-sm font-semibold text-gray-700 mb-2 block">Beschäftigung</label>
+                            <select id="demo-employment" class="w-full px-4 py-2 border-2 rounded-lg">
+                                <option value="angestellt">Angestellt</option><option value="freiberuflich">Freiberuflich</option>
+                                <option value="selbststaendig">Selbstständig</option><option value="student">Student</option>
+                                <option value="rentner">Rentner</option><option value="arbeitssuchend">Arbeitssuchend</option>
+                            </select>
+                        </div>
+                        <div><label class="text-sm font-semibold text-gray-700 mb-2 block">Einkommensklasse</label>
+                            <input type="range" id="demo-income" min="1" max="10" value="5" class="attr-slider mb-2">
+                            <div class="text-center text-sm font-bold text-blue-600" id="demo-income-value">5 / 10</div>
+                        </div>
+                        <div><label class="text-sm font-semibold text-gray-700 mb-2 block">Bildungsniveau</label>
+                            <select id="demo-education" class="w-full px-4 py-2 border-2 rounded-lg">
+                                <option value="hauptschule">Hauptschule</option><option value="mittlere_reife">Mittlere Reife</option>
+                                <option value="abitur">Abitur</option><option value="bachelor">Bachelor</option>
+                                <option value="master">Master</option><option value="promotion">Promotion</option>
+                            </select>
+                        </div>
+                        <div><label class="text-sm font-semibold text-gray-700 mb-2 block">Wohnort-Typ</label>
+                            <select id="demo-location" class="w-full px-4 py-2 border-2 rounded-lg">
+                                <option value="grossstadt">Großstadt (>500k)</option><option value="stadt">Stadt (50k-500k)</option>
+                                <option value="vorstadt">Vorstadt</option><option value="land">Land/Dorf</option>
+                            </select>
+                        </div>
+                        <div><label class="text-sm font-semibold text-gray-700 mb-2 block">Religion</label>
+                            <select id="demo-religion" class="w-full px-4 py-2 border-2 rounded-lg">
+                                <option value="keine">Keine</option><option value="christlich">Christlich</option>
+                                <option value="muslimisch">Muslimisch</option><option value="juedisch">Jüdisch</option>
+                                <option value="buddhistisch">Buddhistisch</option><option value="hindu">Hindu</option>
+                                <option value="andere">Andere</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
+            
+            <div class="mb-6 border-2 border-purple-200 rounded-xl p-4">
+                <div class="collapsible-header flex justify-between items-center mb-4" onclick="toggleCollapse('psycho')">
+                    <h3 class="text-xl font-bold">🧠 Psychographische Eigenschaften</h3>
+                    <span id="psycho-arrow" class="text-2xl">▼</span>
+                </div>
+                <div id="psycho-content" class="collapsible-content open">
+                    <div id="psychoEditor"></div>
+                </div>
+            </div>
+            
+            <div class="mb-6 border-2 border-gray-200 rounded-xl p-4">
+                <div class="collapsible-header flex justify-between items-center mb-4" onclick="toggleCollapse('attrs')">
+                    <h3 class="text-xl font-bold">🎯 Präferenz-Attribute</h3>
+                    <span id="attrs-arrow" class="text-2xl">▼</span>
+                </div>
+                <div id="attrs-content" class="collapsible-content open">
+                    <div id="userProfileEditor"></div>
+                </div>
+            </div>
+            
+            <button id="saveProfileBtn" class="w-full bg-blue-600 text-white px-6 py-4 rounded-lg font-bold text-lg hover:bg-blue-700 touch-card">💾 Profil speichern & Matches finden</button>
         </div>
-        
-        <div class="mb-6 border-2 border-purple-200 rounded-xl p-4">
-            <div class="collapsible-header flex justify-between items-center mb-4" onclick="toggleCollapse('psycho')">
-                <h3 class="text-xl font-bold">🧠 Psychographische Eigenschaften</h3>
-                <span id="psycho-arrow" class="text-2xl">▼</span>
-            </div>
-            <div id="psycho-content" class="collapsible-content open">
-                <div id="psychoEditor"></div>
+        <div id="matchesSection" class="hidden">
+            <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+                <h2 class="text-2xl font-bold mb-4">🎯 Deine Matches</h2>
+                <div id="matchesContainer"></div>
             </div>
         </div>
-        
-        <div class="mb-6 border-2 border-gray-200 rounded-xl p-4">
-            <div class="collapsible-header flex justify-between items-center mb-4" onclick="toggleCollapse('attrs')">
-                <h3 class="text-xl font-bold">🎯 Präferenz-Attribute</h3>
-                <span id="attrs-arrow" class="text-2xl">▼</span>
-            </div>
-            <div id="attrs-content" class="collapsible-content open">
-                <div id="userProfileEditor"></div>
-            </div>
+        <div id="noProfileState" class="bg-white rounded-2xl shadow-xl p-12 text-center">
+            <div class="text-6xl mb-4">👤</div>
+            <h3 class="text-xl font-bold text-gray-600 mb-2">Erstelle dein Profil</h3>
+            <p class="text-gray-500">Fülle Demographie und Präferenzen aus</p>
         </div>
-        
-        <button id="saveProfileBtn" class="w-full bg-blue-600 text-white px-6 py-4 rounded-lg font-bold text-lg hover:bg-blue-700 touch-card">💾 Profil speichern & Matches finden</button>
     </div>
-    <div id="matchesSection" class="hidden">
-        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8">
-            <h2 class="text-2xl font-bold mb-4">🎯 Deine Matches</h2>
-            <div id="matchesContainer"></div>
-        </div>
-    </div>
-    <div id="noProfileState" class="bg-white rounded-2xl shadow-xl p-12 text-center">
-        <div class="text-6xl mb-4">👤</div>
-        <h3 class="text-xl font-bold text-gray-600 mb-2">Erstelle dein Profil</h3>
-        <p class="text-gray-500">Fülle Demographie und Präferenzen aus</p>
-    </div>
-</div>
-```
-
 </div>
 
 <script>
@@ -443,6 +436,7 @@ function switchTab(tab) {
 
 function generateDemoAnalysis(category, description) {
     const randomScore = () => Math.floor(Math.random() * 100);
+    const randomDirection = () => ['positive', 'negative', 'neutral'][Math.floor(Math.random() * 3)];
     const pickRandom = (arr, count) => [...arr].sort(() => 0.5 - Math.random()).slice(0, count);
     const allAttrs = [...ATTRIBUTES.werte, ...ATTRIBUTES.emotional, ...ATTRIBUTES.aesthetik];
     const dominant = pickRandom(allAttrs, 20);
@@ -452,7 +446,11 @@ function generateDemoAnalysis(category, description) {
         if (group !== 'psychographisch') {
             attributes[group] = {};
             ATTRIBUTES[group].forEach(attr => {
-                attributes[group][attr] = { score: randomScore(), reasoning: 'Demo' };
+                attributes[group][attr] = { 
+                    score: randomScore(), 
+                    direction: randomDirection(),
+                    reasoning: 'Demo' 
+                };
             });
         }
     });
@@ -586,14 +584,47 @@ function calculateMatchScore(profile, ad) {
     let totalScore = 0;
     let groupScores = {};
     
+    // Hilfsfunktion für Similarity mit Direction
+    function calculateSimilarity(userValue, adAttr) {
+        const adValue = adAttr.score || 0;
+        const direction = adAttr.direction || 'positive';
+        
+        // User-Werte sind IMMER positiv (User will gute Sachen)
+        // Wenn User hohen Wert hat (>50) und Ad negative Direction → BESTRAFUNG
+        
+        if (direction === 'negative' && userValue > 50) {
+            // User mag Attribut, aber Ad ist negativ dafür
+            // Beispiel: User mag Gesundheit (80), McDonald's ist ungesund (direction: negative)
+            const penalty = (userValue - 50) * 2; // Je höher User-Wert, desto mehr Strafe
+            return Math.max(0, 50 - penalty - adValue * 0.5);
+        }
+        
+        if (direction === 'positive') {
+            // Normale Similarity: Je näher, desto besser
+            const diff = Math.abs(userValue - adValue);
+            return Math.max(0, 100 - diff);
+        }
+        
+        // direction === 'neutral' oder niedrige Scores
+        if (adValue < 20) {
+            // Attribut kaum vorhanden → neutral behandeln
+            return userValue < 50 ? 60 : 40; // Leicht negativ wenn User es mag
+        }
+        
+        // Normal matching für neutrale mittlere Werte
+        const diff = Math.abs(userValue - adValue);
+        return Math.max(0, 100 - diff);
+    }
+    
     Object.keys(ATTRIBUTES).forEach(group => {
         if (group !== 'psychographisch') {
             let groupScore = 0, count = 0;
             ATTRIBUTES[group].forEach(attr => {
                 const userValue = profile.attributes[group][attr];
-                const adValue = ad.analysis.attributes[group][attr].score;
-                const diff = Math.abs(userValue - adValue);
-                const similarity = 100 - diff;
+                const adAttr = ad.analysis.attributes[group][attr];
+                
+                // Neue Logik mit Direction
+                const similarity = calculateSimilarity(userValue, adAttr);
                 groupScore += similarity;
                 count++;
             });
@@ -608,43 +639,45 @@ function calculateMatchScore(profile, ad) {
     const adAttrs = ad.analysis.attributes;
     const hasCustomPsycho = profile.psycho && Object.values(profile.psycho).some(v => v !== 50);
     
+    // Demographie-Boosts (nur bei POSITIVER Direction!)
     if (demo.age && demo.age !== 30) {
         if (demo.age < 25) {
-            if (adAttrs.aesthetik.dynamisch?.score > 70) demoBoost += 2;
-            if (adAttrs.aesthetik.urban?.score > 70) demoBoost += 2;
+            if (adAttrs.aesthetik.dynamisch?.score > 70 && adAttrs.aesthetik.dynamisch?.direction !== 'negative') demoBoost += 2;
+            if (adAttrs.aesthetik.urban?.score > 70 && adAttrs.aesthetik.urban?.direction !== 'negative') demoBoost += 2;
         } else if (demo.age > 50) {
-            if (adAttrs.werte.tradition?.score > 70) demoBoost += 2;
-            if (adAttrs.werte.sicherheit?.score > 70) demoBoost += 2;
+            if (adAttrs.werte.tradition?.score > 70 && adAttrs.werte.tradition?.direction !== 'negative') demoBoost += 2;
+            if (adAttrs.werte.sicherheit?.score > 70 && adAttrs.werte.sicherheit?.direction !== 'negative') demoBoost += 2;
         }
     }
     
     if (demo.children && demo.children > 0) {
-        if (adAttrs.werte.familie?.score > 70) demoBoost += 3;
-        if (adAttrs.werte.sicherheit?.score > 60) demoBoost += 2;
+        if (adAttrs.werte.familie?.score > 70 && adAttrs.werte.familie?.direction !== 'negative') demoBoost += 3;
+        if (adAttrs.werte.sicherheit?.score > 60 && adAttrs.werte.sicherheit?.direction !== 'negative') demoBoost += 2;
     }
     
     if (demo.income && demo.income !== 5) {
         if (demo.income >= 8) {
-            if (adAttrs.werte.luxus?.score > 70) demoBoost += 3;
-            if (adAttrs.aesthetik.elegant?.score > 70) demoBoost += 2;
+            if (adAttrs.werte.luxus?.score > 70 && adAttrs.werte.luxus?.direction === 'positive') demoBoost += 3;
+            if (adAttrs.aesthetik.elegant?.score > 70 && adAttrs.aesthetik.elegant?.direction === 'positive') demoBoost += 2;
         } else if (demo.income <= 3) {
-            if (adAttrs.werte.pragmatismus?.score > 70) demoBoost += 3;
+            if (adAttrs.werte.pragmatismus?.score > 70 && adAttrs.werte.pragmatismus?.direction === 'positive') demoBoost += 3;
         }
     }
     
     if (demo.location && demo.location !== 'stadt') {
         if (demo.location === 'grossstadt') {
-            if (adAttrs.aesthetik.urban?.score > 70) demoBoost += 2;
+            if (adAttrs.aesthetik.urban?.score > 70 && adAttrs.aesthetik.urban?.direction !== 'negative') demoBoost += 2;
         } else if (demo.location === 'land') {
-            if (adAttrs.aesthetik.natuerlich?.score > 70) demoBoost += 2;
+            if (adAttrs.aesthetik.natuerlich?.score > 70 && adAttrs.aesthetik.natuerlich?.direction === 'positive') demoBoost += 2;
         }
     }
     
+    // Psycho-Boosts (nur bei positiver Direction!)
     if (hasCustomPsycho && profile.psycho) {
-        if (profile.psycho.kreativitaet > 70 && adAttrs.aesthetik.kuenstlerisch?.score > 70) demoBoost += 2;
-        if (profile.psycho.analytisches_denken > 70 && adAttrs.aesthetik.technologisch?.score > 70) demoBoost += 2;
-        if (profile.psycho.soziale_kompetenz > 70 && adAttrs.werte.gemeinschaft?.score > 70) demoBoost += 2;
-        if (profile.psycho.innovationsgeist > 70 && adAttrs.werte.innovation?.score > 70) demoBoost += 2;
+        if (profile.psycho.kreativitaet > 70 && adAttrs.aesthetik.kuenstlerisch?.score > 70 && adAttrs.aesthetik.kuenstlerisch?.direction === 'positive') demoBoost += 2;
+        if (profile.psycho.analytisches_denken > 70 && adAttrs.aesthetik.technologisch?.score > 70 && adAttrs.aesthetik.technologisch?.direction === 'positive') demoBoost += 2;
+        if (profile.psycho.soziale_kompetenz > 70 && adAttrs.werte.gemeinschaft?.score > 70 && adAttrs.werte.gemeinschaft?.direction === 'positive') demoBoost += 2;
+        if (profile.psycho.innovationsgeist > 70 && adAttrs.werte.innovation?.score > 70 && adAttrs.werte.innovation?.direction === 'positive') demoBoost += 2;
     }
     
     return Math.min(Math.round(totalScore + demoBoost), 100);
@@ -938,6 +971,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
 </body>
 </html>
