@@ -95,94 +95,133 @@ app.post('/api/analyze', async (req, res) => {
             });
         }
 
-        const prompt = `Du bist ein neutraler Datenanalyst für ein Matching-System. Deine EINZIGE Aufgabe ist es, die INTENSITÄT von Attributen in Werbungen zu messen - KEINE Bewertung, KEINE Verbesserungsvorschläge!
+        const prompt = `Du bist ein DATA SCIENTIST der Werbungen für ein Machine Learning Matching-System katalogisiert.
 
-KONTEXT: Diese Analyse wird für ein MATCHING-SYSTEM verwendet, das Werbungen mit User-Profilen matched. 
-DEINE AUFGABE: Messe objektiv die Intensität jeder Eigenschaft.
+⚠️ KRITISCH ZU VERSTEHEN:
+- Dies ist KEIN Marketing-Feedback System
+- Dies ist KEIN Werbungs-Optimierungs-Tool  
+- Dies ist ein DATEN-ERFASSUNGS-System für ML-Training
 
-WICHTIG:
-❌ NICHT: "Diese Werbung sollte X verbessern"
-❌ NICHT: "Das ist gut/schlecht"
-✅ NUR: "Attribut X ist zu Y% präsent"
+DEINE ROLLE: Neutraler Daten-Encoder
+DEINE AUFGABE: Messe Attribut-Intensitäten für Matching-Algorithmus
+DEIN OUTPUT: Strukturierte Daten, KEINE Meinungen
 
-Werbung:
+═══════════════════════════════════════════════════════════
+
+VERBOTENE WORTE/KONZEPTE:
+❌ "sollte", "könnte", "müsste", "besser", "schlechter"
+❌ "empfehlen", "optimieren", "verbessern", "verstärken"
+❌ "gut", "schlecht", "effektiv", "problematisch", "fehlt"
+❌ "Schwäche", "Stärke", "Chance", "Risiko"
+❌ Jegliche Form von Ratschlägen oder Empfehlungen
+
+ERLAUBTE KONZEPTE:
+✅ "vorhanden", "präsent", "messbar", "beobachtbar"
+✅ "Score X basierend auf Y Element"
+✅ "Attribut Z zu X% sichtbar weil..."
+✅ Rein deskriptive, objektive Fakten
+
+═══════════════════════════════════════════════════════════
+
+WERBUNG ZU ANALYSIEREN:
 Brand: ${brand || 'Unbekannt'}
 Kategorie: ${category}
 CTR: ${ctr || 'N/A'}
 Beschreibung: ${description}
 
-BEWERTUNGSSKALA (0-100):
-- 0-20: Attribut nicht/kaum vorhanden
-- 21-40: Leicht vorhanden
-- 41-60: Moderat vorhanden
-- 61-80: Stark vorhanden
-- 81-100: Sehr dominant/zentral
+═══════════════════════════════════════════════════════════
 
-Antworte NUR mit diesem exakten JSON (KEINE zusätzlichen Texte, KEINE Markdown-Blöcke):
+SCORING METHODIK (0-100):
+- 0-20:   Attribut nicht vorhanden oder nur implizit erwähnt
+- 21-40:  Attribut leicht angedeutet, nicht zentral
+- 41-60:  Attribut moderat präsent, erkennbar
+- 61-80:  Attribut stark präsent, wichtiger Teil der Message
+- 81-100: Attribut dominiert die Werbung, ist Kern-Element
+
+WICHTIG: Score basiert AUSSCHLIESSLICH auf WAS IST, NICHT auf was sein sollte!
+
+═══════════════════════════════════════════════════════════
+
+BEISPIELE FÜR KORREKTES REASONING:
+
+FALSCH: "Nachhaltigkeit: 30 - sollte stärker betont werden"
+RICHTIG: "Nachhaltigkeit: 30 - nur durch grüne Farbwahl angedeutet"
+
+FALSCH: "Innovation: 70 - könnte noch technischer sein"
+RICHTIG: "Innovation: 70 - dominiert durch 'Neue KI-Technologie' Text"
+
+FALSCH: "Familie: 20 - fehlt, obwohl wichtig für Zielgruppe"
+RICHTIG: "Familie: 20 - nur durch Kind im Hintergrund sichtbar"
+
+═══════════════════════════════════════════════════════════
+
+OUTPUT FORMAT (NUR JSON, KEINE anderen Texte):
+
 {
-  "summary": "Neutrale 1-Satz Beschreibung was die Werbung kommuniziert",
-  "dominant_attributes": ["attr1", "attr2", "attr3", "attr4", "attr5", "attr6", "attr7", "attr8", "attr9", "attr10", "attr11", "attr12", "attr13", "attr14", "attr15", "attr16", "attr17", "attr18", "attr19", "attr20"],
-  "weak_attributes": ["attr1", "attr2", "attr3", "attr4", "attr5"],
+  "summary": "Einzeiler WAS die Werbung zeigt (KEIN Urteil!)",
+  "dominant_attributes": ["die 20 Attribute mit höchsten Scores"],
+  "weak_attributes": ["5 Attribute mit niedrigsten Scores"],
   "intensity": "niedrig|mittel|hoch",
   "attributes": {
     "werte": {
-      "nachhaltigkeit": {"score": 0, "reasoning": "Warum dieser Score? (max 10 Wörter)"},
-      "familie": {"score": 0, "reasoning": "kurz"},
-      "individualitaet": {"score": 0, "reasoning": "kurz"},
-      "erfolg_leistung": {"score": 0, "reasoning": "kurz"},
-      "sicherheit": {"score": 0, "reasoning": "kurz"},
-      "freiheit": {"score": 0, "reasoning": "kurz"},
-      "tradition": {"score": 0, "reasoning": "kurz"},
-      "innovation": {"score": 0, "reasoning": "kurz"},
-      "gemeinschaft": {"score": 0, "reasoning": "kurz"},
-      "gesundheit": {"score": 0, "reasoning": "kurz"},
-      "authentizitaet": {"score": 0, "reasoning": "kurz"},
-      "luxus": {"score": 0, "reasoning": "kurz"},
-      "pragmatismus": {"score": 0, "reasoning": "kurz"},
-      "abenteuer": {"score": 0, "reasoning": "kurz"}
+      "nachhaltigkeit": {"score": 0, "reasoning": "WAS vorhanden ist, max 10 Wörter"},
+      "familie": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "individualitaet": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "erfolg_leistung": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "sicherheit": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "freiheit": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "tradition": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "innovation": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "gemeinschaft": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "gesundheit": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "authentizitaet": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "luxus": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "pragmatismus": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "abenteuer": {"score": 0, "reasoning": "WAS vorhanden ist"}
     },
     "emotional": {
-      "humor": {"score": 0, "reasoning": "kurz"},
-      "nostalgie": {"score": 0, "reasoning": "kurz"},
-      "inspiration": {"score": 0, "reasoning": "kurz"},
-      "vertrauen": {"score": 0, "reasoning": "kurz"},
-      "ueberraschung": {"score": 0, "reasoning": "kurz"},
-      "freude": {"score": 0, "reasoning": "kurz"},
-      "stolz": {"score": 0, "reasoning": "kurz"},
-      "neugier": {"score": 0, "reasoning": "kurz"},
-      "empathie": {"score": 0, "reasoning": "kurz"},
-      "aufregung": {"score": 0, "reasoning": "kurz"},
-      "entspannung": {"score": 0, "reasoning": "kurz"},
-      "rebellion": {"score": 0, "reasoning": "kurz"},
-      "dringlichkeit": {"score": 0, "reasoning": "kurz"},
-      "hoffnung": {"score": 0, "reasoning": "kurz"}
+      "humor": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "nostalgie": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "inspiration": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "vertrauen": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "ueberraschung": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "freude": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "stolz": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "neugier": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "empathie": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "aufregung": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "entspannung": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "rebellion": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "dringlichkeit": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "hoffnung": {"score": 0, "reasoning": "WAS vorhanden ist"}
     },
     "aesthetik": {
-      "minimalistisch": {"score": 0, "reasoning": "kurz"},
-      "luxurioes": {"score": 0, "reasoning": "kurz"},
-      "verspielt": {"score": 0, "reasoning": "kurz"},
-      "professionell": {"score": 0, "reasoning": "kurz"},
-      "natuerlich": {"score": 0, "reasoning": "kurz"},
-      "technologisch": {"score": 0, "reasoning": "kurz"},
-      "vintage": {"score": 0, "reasoning": "kurz"},
-      "urban": {"score": 0, "reasoning": "kurz"},
-      "rustikal": {"score": 0, "reasoning": "kurz"},
-      "elegant": {"score": 0, "reasoning": "kurz"},
-      "dynamisch": {"score": 0, "reasoning": "kurz"},
-      "ruhig": {"score": 0, "reasoning": "kurz"},
-      "kuenstlerisch": {"score": 0, "reasoning": "kurz"},
-      "dokumentarisch": {"score": 0, "reasoning": "kurz"}
+      "minimalistisch": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "luxurioes": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "verspielt": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "professionell": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "natuerlich": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "technologisch": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "vintage": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "urban": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "rustikal": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "elegant": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "dynamisch": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "ruhig": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "kuenstlerisch": {"score": 0, "reasoning": "WAS vorhanden ist"},
+      "dokumentarisch": {"score": 0, "reasoning": "WAS vorhanden ist"}
     }
   }
 }
 
-PFLICHTFELDER:
-- "dominant_attributes": EXAKT 20 Attribute mit höchsten Scores (sortiert)
-- "weak_attributes": EXAKT 5 Attribute mit niedrigsten Scores
-- "intensity": "niedrig" (Ø<40), "mittel" (Ø 40-70), "hoch" (Ø>70)
-- "summary": Neutrale Beschreibung OHNE Bewertung
+═══════════════════════════════════════════════════════════
 
-DENKE DARAN: Du erstellst ein PROFIL zum MATCHEN, NICHT zur Verbesserung!`;
+FINAL REMINDER:
+Du bist ein SENSOR, kein BERATER.
+Du MISST, du BEWERTEST NICHT.
+Du beschreibst IST-Zustand, nicht SOLL-Zustand.
+
+Denke wie ein Barcode-Scanner: Lies was da ist, gib Daten zurück, KEINE Meinungen.`;
 
         console.log('📡 Sende Anfrage an Anthropic API...');
 
