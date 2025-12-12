@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Werbeanalyse Dashboard MVP2</title>
+    <title>Werbeanalyse MVP2.2 - ML Ready</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -17,7 +17,6 @@
         .tab-active { background: #2563eb; color: white; }
         .tab-inactive { background: #e5e7eb; color: #4b5563; }
         
-        /* Attribute Slider Styles */
         .attr-slider {
             -webkit-appearance: none;
             width: 100%;
@@ -38,16 +37,37 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         
-        /* Match Score Badge */
         .match-badge {
             background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
         }
         
-        /* Attribute Bar */
-        .attr-bar {
-            height: 8px;
-            background: linear-gradient(to right, #ef4444 0%, #eab308 50%, #22c55e 100%);
-            border-radius: 4px;
+        /* Star Rating */
+        .star-rating {
+            display: flex;
+            gap: 4px;
+        }
+        .star {
+            cursor: pointer;
+            font-size: 24px;
+            color: #d1d5db;
+            transition: color 0.2s;
+        }
+        .star:hover, .star.active {
+            color: #fbbf24;
+        }
+        
+        /* Collapsible sections */
+        .collapsible-header {
+            cursor: pointer;
+            user-select: none;
+        }
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .collapsible-content.open {
+            max-height: 2000px;
         }
     </style>
 </head>
@@ -58,13 +78,17 @@
     <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-4 md:mb-6">
         <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
             <div>
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Werbeanalyse MVP2</h1>
-                <p class="text-sm md:text-base text-gray-600">Attribut-Profiling • Matching • Insights</p>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Werbeanalyse MVP2.2</h1>
+                <p class="text-sm md:text-base text-gray-600">Attribut-Profiling • Matching • ML-Ready 🧠</p>
             </div>
-            <div class="flex gap-2">
+            <div class="flex gap-2 flex-wrap">
                 <div class="bg-green-100 px-4 py-2 rounded-lg flex items-center gap-2">
                     <span class="text-green-800 font-bold" id="adCount">0</span>
                     <span class="text-green-600 text-sm">Ads</span>
+                </div>
+                <div class="bg-purple-100 px-4 py-2 rounded-lg flex items-center gap-2">
+                    <span class="text-purple-800 font-bold" id="ratingCount">0</span>
+                    <span class="text-purple-600 text-sm">Ratings</span>
                 </div>
                 <div class="bg-green-100 px-4 py-2 rounded-lg flex items-center gap-2">
                     <span class="text-green-800 font-bold text-sm">Backend ✓</span>
@@ -92,7 +116,6 @@
     <!-- Tab: Analyze -->
     <div id="tab-analyze" class="tab-content">
         <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-4 md:mb-6">
-            <!-- Collaboration Tools -->
             <div class="grid grid-cols-3 gap-2 md:gap-3 mb-4">
                 <label class="flex-1 bg-green-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-green-600 cursor-pointer text-center touch-card">
                     📥 Import
@@ -101,12 +124,15 @@
                 <button id="exportBtn" class="flex-1 bg-blue-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-blue-600 touch-card">
                     📤 Export
                 </button>
-                <button id="clearBtn" class="flex-1 bg-red-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-red-600 touch-card">
-                    🗑️ Alle löschen
+                <button id="exportMLBtn" class="flex-1 bg-purple-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-purple-600 touch-card">
+                    🧠 ML Export
                 </button>
             </div>
+            
+            <button id="clearBtn" class="w-full bg-red-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-red-600 touch-card mb-4">
+                🗑️ Alle Daten löschen
+            </button>
 
-            <!-- Input Form -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                 <input id="brand" placeholder="Brand" class="px-4 py-3 border-2 rounded-lg text-base">
                 <select id="category" class="px-4 py-3 border-2 rounded-lg text-base">
@@ -141,7 +167,6 @@
             <div id="categoriesContainer"></div>
         </div>
 
-        <!-- Empty State -->
         <div id="emptyState" class="bg-white rounded-2xl shadow-xl p-12 text-center">
             <div class="text-6xl mb-4">📊</div>
             <h3 class="text-xl font-bold text-gray-600 mb-2">Keine Werbungen</h3>
@@ -151,7 +176,6 @@
 
     <!-- Tab: Insights -->
     <div id="tab-insights" class="tab-content hidden">
-        <!-- KI-Analyse Input -->
         <div class="bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl shadow-xl p-6 mb-4">
             <h3 class="text-xl font-bold text-white mb-3 flex items-center gap-2">
                 <span>🤖</span>
@@ -175,7 +199,6 @@
             </button>
         </div>
 
-        <!-- KI Response -->
         <div id="aiResponseContainer" class="bg-white rounded-2xl shadow-xl p-6 mb-4 hidden">
             <div class="flex justify-between items-start mb-4">
                 <h3 class="text-xl font-bold text-gray-800">🤖 KI-Antwort</h3>
@@ -199,6 +222,10 @@
                     <div class="flex justify-between">
                         <span class="text-gray-600">Ø Intensität:</span>
                         <span class="font-bold" id="stats-intensity">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">ML Trainings-Daten:</span>
+                        <span class="font-bold" id="stats-ml-ready">0</span>
                     </div>
                 </div>
             </div>
@@ -226,11 +253,132 @@
         <!-- User Profile Section -->
         <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-4">
             <h2 class="text-2xl font-bold mb-4">👤 Dein Profil</h2>
-            <p class="text-gray-600 mb-6">Erstelle dein Präferenz-Profil um passende Werbungen zu finden</p>
             
-            <div id="userProfileEditor"></div>
+            <!-- Demographie Section -->
+            <div class="mb-6 border-2 border-gray-200 rounded-xl p-4">
+                <div class="collapsible-header flex justify-between items-center mb-4" onclick="toggleCollapse('demo')">
+                    <h3 class="text-xl font-bold">📊 Demographie</h3>
+                    <span id="demo-arrow" class="text-2xl">▼</span>
+                </div>
+                
+                <div id="demo-content" class="collapsible-content open">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Alter -->
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 mb-2 block">Alter</label>
+                            <input type="range" id="demo-age" min="18" max="80" value="30" class="attr-slider mb-2">
+                            <div class="text-center text-sm font-bold text-blue-600" id="demo-age-value">30 Jahre</div>
+                        </div>
+                        
+                        <!-- Geschlecht -->
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 mb-2 block">Geschlecht</label>
+                            <select id="demo-gender" class="w-full px-4 py-2 border-2 rounded-lg">
+                                <option value="männlich">Männlich</option>
+                                <option value="weiblich">Weiblich</option>
+                                <option value="divers">Divers</option>
+                                <option value="keine_angabe">Keine Angabe</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Beziehungsstatus -->
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 mb-2 block">Beziehungsstatus</label>
+                            <select id="demo-relationship" class="w-full px-4 py-2 border-2 rounded-lg">
+                                <option value="single">Single</option>
+                                <option value="beziehung">In Beziehung</option>
+                                <option value="verheiratet">Verheiratet</option>
+                                <option value="geschieden">Geschieden</option>
+                                <option value="verwitwet">Verwitwet</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Kinder -->
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 mb-2 block">Kinder</label>
+                            <div class="flex gap-2">
+                                <select id="demo-children" class="flex-1 px-4 py-2 border-2 rounded-lg">
+                                    <option value="nein">Nein</option>
+                                    <option value="ja">Ja</option>
+                                </select>
+                                <input type="number" id="demo-children-count" min="0" max="10" value="0" class="w-20 px-4 py-2 border-2 rounded-lg" disabled>
+                            </div>
+                        </div>
+                        
+                        <!-- Beschäftigung -->
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 mb-2 block">Beschäftigung</label>
+                            <select id="demo-employment" class="w-full px-4 py-2 border-2 rounded-lg">
+                                <option value="angestellt">Angestellt</option>
+                                <option value="freiberuflich">Freiberuflich</option>
+                                <option value="selbststaendig">Selbstständig</option>
+                                <option value="student">Student</option>
+                                <option value="rentner">Rentner</option>
+                                <option value="arbeitssuchend">Arbeitssuchend</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Einkommen -->
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 mb-2 block">Einkommensklasse</label>
+                            <input type="range" id="demo-income" min="1" max="10" value="5" class="attr-slider mb-2">
+                            <div class="text-center text-sm font-bold text-blue-600" id="demo-income-value">5 / 10</div>
+                        </div>
+                        
+                        <!-- Bildung -->
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 mb-2 block">Bildungsniveau</label>
+                            <select id="demo-education" class="w-full px-4 py-2 border-2 rounded-lg">
+                                <option value="hauptschule">Hauptschule</option>
+                                <option value="mittlere_reife">Mittlere Reife</option>
+                                <option value="abitur">Abitur</option>
+                                <option value="bachelor">Bachelor</option>
+                                <option value="master">Master</option>
+                                <option value="promotion">Promotion</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Wohnort -->
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 mb-2 block">Wohnort-Typ</label>
+                            <select id="demo-location" class="w-full px-4 py-2 border-2 rounded-lg">
+                                <option value="grossstadt">Großstadt (>500k)</option>
+                                <option value="stadt">Stadt (50k-500k)</option>
+                                <option value="vorstadt">Vorstadt</option>
+                                <option value="land">Land/Dorf</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Religion -->
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 mb-2 block">Religion</label>
+                            <select id="demo-religion" class="w-full px-4 py-2 border-2 rounded-lg">
+                                <option value="keine">Keine</option>
+                                <option value="christlich">Christlich</option>
+                                <option value="muslimisch">Muslimisch</option>
+                                <option value="juedisch">Jüdisch</option>
+                                <option value="buddhistisch">Buddhistisch</option>
+                                <option value="hindu">Hindu</option>
+                                <option value="andere">Andere</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
-            <button id="saveProfileBtn" class="w-full bg-blue-600 text-white px-6 py-4 rounded-lg font-bold text-lg hover:bg-blue-700 touch-card mt-4">
+            <!-- Attribute Section -->
+            <div class="mb-6 border-2 border-gray-200 rounded-xl p-4">
+                <div class="collapsible-header flex justify-between items-center mb-4" onclick="toggleCollapse('attrs')">
+                    <h3 class="text-xl font-bold">🎯 Präferenz-Attribute</h3>
+                    <span id="attrs-arrow" class="text-2xl">▼</span>
+                </div>
+                
+                <div id="attrs-content" class="collapsible-content open">
+                    <div id="userProfileEditor"></div>
+                </div>
+            </div>
+            
+            <button id="saveProfileBtn" class="w-full bg-blue-600 text-white px-6 py-4 rounded-lg font-bold text-lg hover:bg-blue-700 touch-card">
                 💾 Profil speichern & Matches finden
             </button>
         </div>
@@ -243,15 +391,15 @@
             </div>
         </div>
 
-        <!-- No Profile State -->
         <div id="noProfileState" class="bg-white rounded-2xl shadow-xl p-12 text-center">
             <div class="text-6xl mb-4">👤</div>
             <h3 class="text-xl font-bold text-gray-600 mb-2">Erstelle dein Profil</h3>
-            <p class="text-gray-500">Nutze die Slider oben um deine Präferenzen festzulegen</p>
+            <p class="text-gray-500">Fülle Demographie und Präferenzen aus um Matches zu finden</p>
         </div>
     </div>
 </div>
 
+<!-- JavaScript fortsetzung in separater Datei -->
 <script>
     // ========================================
     // 🔧 KONFIGURATION
@@ -259,19 +407,17 @@
     const BACKEND_URL = 'https://werbeanalyse.onrender.com';
     // ========================================
 
-    // Alle Attribute definiert
+    // Alle Attribute
     const ATTRIBUTES = {
         werte: ['nachhaltigkeit', 'familie', 'individualitaet', 'erfolg_leistung', 'sicherheit', 'freiheit', 'tradition', 'innovation', 'gemeinschaft', 'gesundheit', 'authentizitaet', 'luxus', 'pragmatismus', 'abenteuer'],
         emotional: ['humor', 'nostalgie', 'inspiration', 'vertrauen', 'ueberraschung', 'freude', 'stolz', 'neugier', 'empathie', 'aufregung', 'entspannung', 'rebellion', 'dringlichkeit', 'hoffnung'],
         aesthetik: ['minimalistisch', 'luxurioes', 'verspielt', 'professionell', 'natuerlich', 'technologisch', 'vintage', 'urban', 'rustikal', 'elegant', 'dynamisch', 'ruhig', 'kuenstlerisch', 'dokumentarisch']
     };
 
-    // Kategorie-Gewichtungen (werden vom Backend geladen)
     let CATEGORY_WEIGHTS = {};
-
-    // Global state
     let ads = [];
     let userProfile = null;
+    let userRatings = {}; // { ad_id: rating }
     let currentTab = 'analyze';
     let categoryChart = null;
     let attributesChart = null;
@@ -280,23 +426,21 @@
     async function init() {
         loadAds();
         loadUserProfile();
+        loadUserRatings();
         await loadCategoryWeights();
         updateUI();
         buildUserProfileEditor();
+        setupDemographyListeners();
     }
 
-    // Load category weights from backend
     async function loadCategoryWeights() {
         try {
             const response = await fetch(`${BACKEND_URL}/api/category-weights`);
             if (response.ok) {
                 const data = await response.json();
                 CATEGORY_WEIGHTS = data.weights;
-                console.log('✅ Gewichtungen geladen');
             }
         } catch (error) {
-            console.log('⚠️ Fallback zu Default-Gewichtungen');
-            // Fallback weights
             CATEGORY_WEIGHTS = {
                 'Lebensmittel & Getränke': { werte: 0.45, emotional: 0.35, aesthetik: 0.20 },
                 'Technologie & Elektronik': { werte: 0.25, emotional: 0.25, aesthetik: 0.50 },
@@ -312,7 +456,6 @@
         }
     }
 
-    // Data Management
     function loadAds() {
         const stored = localStorage.getItem('analyzed_ads_mvp2');
         if (stored) {
@@ -328,12 +471,96 @@
     function loadUserProfile() {
         const stored = localStorage.getItem('user_profile_mvp2');
         if (stored) {
-            try { userProfile = JSON.parse(stored); } catch(e){ userProfile = null; }
+            try { 
+                userProfile = JSON.parse(stored);
+                // Restore demography values in UI if exists
+                if (userProfile.demographics) {
+                    restoreDemographyUI(userProfile.demographics);
+                }
+            } catch(e){ userProfile = null; }
         }
     }
 
     function saveUserProfile() {
         localStorage.setItem('user_profile_mvp2', JSON.stringify(userProfile));
+    }
+
+    function loadUserRatings() {
+        const stored = localStorage.getItem('user_ratings_mvp2');
+        if (stored) {
+            try { userRatings = JSON.parse(stored); } catch(e){ userRatings = {}; }
+        }
+    }
+
+    function saveUserRatings() {
+        localStorage.setItem('user_ratings_mvp2', JSON.stringify(userRatings));
+        updateUI();
+    }
+
+    // Demography UI Setup
+    function setupDemographyListeners() {
+        // Alter slider
+        document.getElementById('demo-age').addEventListener('input', (e) => {
+            document.getElementById('demo-age-value').textContent = e.target.value + ' Jahre';
+        });
+        
+        // Einkommen slider
+        document.getElementById('demo-income').addEventListener('input', (e) => {
+            document.getElementById('demo-income-value').textContent = e.target.value + ' / 10';
+        });
+        
+        // Kinder toggle
+        document.getElementById('demo-children').addEventListener('change', (e) => {
+            const countInput = document.getElementById('demo-children-count');
+            countInput.disabled = e.target.value === 'nein';
+            if (e.target.value === 'nein') countInput.value = 0;
+        });
+    }
+
+    function restoreDemographyUI(demo) {
+        if (demo.age) {
+            document.getElementById('demo-age').value = demo.age;
+            document.getElementById('demo-age-value').textContent = demo.age + ' Jahre';
+        }
+        if (demo.gender) document.getElementById('demo-gender').value = demo.gender;
+        if (demo.relationship) document.getElementById('demo-relationship').value = demo.relationship;
+        if (demo.children !== undefined) {
+            document.getElementById('demo-children').value = demo.children > 0 ? 'ja' : 'nein';
+            document.getElementById('demo-children-count').value = demo.children;
+            document.getElementById('demo-children-count').disabled = demo.children === 0;
+        }
+        if (demo.employment) document.getElementById('demo-employment').value = demo.employment;
+        if (demo.income) {
+            document.getElementById('demo-income').value = demo.income;
+            document.getElementById('demo-income-value').textContent = demo.income + ' / 10';
+        }
+        if (demo.education) document.getElementById('demo-education').value = demo.education;
+        if (demo.location) document.getElementById('demo-location').value = demo.location;
+        if (demo.religion) document.getElementById('demo-religion').value = demo.religion;
+    }
+
+    function getDemographyFromUI() {
+        return {
+            age: parseInt(document.getElementById('demo-age').value),
+            gender: document.getElementById('demo-gender').value,
+            relationship: document.getElementById('demo-relationship').value,
+            children: document.getElementById('demo-children').value === 'ja' 
+                ? parseInt(document.getElementById('demo-children-count').value) 
+                : 0,
+            employment: document.getElementById('demo-employment').value,
+            income: parseInt(document.getElementById('demo-income').value),
+            education: document.getElementById('demo-education').value,
+            location: document.getElementById('demo-location').value,
+            religion: document.getElementById('demo-religion').value
+        };
+    }
+
+    // Collapsible sections
+    function toggleCollapse(section) {
+        const content = document.getElementById(section + '-content');
+        const arrow = document.getElementById(section + '-arrow');
+        content.classList.toggle('open');
+        arrow.textContent = content.classList.contains('open') ? '▼' : '▶';
     }
 
     // Tab Navigation
@@ -362,8 +589,8 @@
         };
 
         const allAttrs = [...ATTRIBUTES.werte, ...ATTRIBUTES.emotional, ...ATTRIBUTES.aesthetik];
-        const dominant = pickRandom(allAttrs, 5);
-        const weak = pickRandom(allAttrs.filter(a => !dominant.includes(a)), 2);
+        const dominant = pickRandom(allAttrs, 20);
+        const weak = pickRandom(allAttrs.filter(a => !dominant.includes(a)), 5);
 
         const attributes = {};
         Object.keys(ATTRIBUTES).forEach(group => {
@@ -405,35 +632,22 @@
         try {
             let analysis;
             
-            // Versuche Backend
             try {
                 const backendUrl = `${BACKEND_URL}/api/analyze`;
-                
                 const response = await fetch(backendUrl, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        brand,
-                        category,
-                        ctr,
-                        description
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ brand, category, ctr, description })
                 });
 
-                if (!response.ok) {
-                    throw new Error('Backend nicht erreichbar');
-                }
+                if (!response.ok) throw new Error('Backend nicht erreichbar');
 
                 const data = await response.json();
-
                 if (data.success && data.analysis) {
                     analysis = data.analysis;
                 } else {
                     throw new Error('Ungültige Backend Response');
                 }
-
             } catch (apiError) {
                 console.log('Backend Fehler:', apiError.message, '- Nutze Demo-Modus');
                 analysis = generateDemoAnalysis(category, description);
@@ -453,7 +667,6 @@
             ads.unshift(newAd);
             saveAds();
 
-            // Clear form
             document.getElementById('brand').value = '';
             document.getElementById('category').value = '';
             document.getElementById('ctr').value = '';
@@ -471,18 +684,14 @@
         }
     }
 
+    // Fortsetzung in Teil 2...
     // Build User Profile Editor
     function buildUserProfileEditor() {
         const container = document.getElementById('userProfileEditor');
-        
         let html = '';
         
         Object.keys(ATTRIBUTES).forEach(group => {
-            html += `
-                <div class="mb-6">
-                    <h3 class="text-lg font-bold mb-3 capitalize">${group}</h3>
-                    <div class="space-y-3">
-            `;
+            html += `<div class="mb-6"><h4 class="text-md font-bold mb-3 capitalize">${group}</h4><div class="space-y-3">`;
             
             ATTRIBUTES[group].forEach(attr => {
                 const currentValue = userProfile && userProfile.attributes && userProfile.attributes[group] 
@@ -509,21 +718,17 @@
                 `;
             });
             
-            html += `
-                    </div>
-                </div>
-            `;
+            html += `</div></div>`;
         });
         
         container.innerHTML = html;
     }
 
-    // Update Slider Value Display
     function updateSliderValue(group, attr, value) {
         document.getElementById(`value-${group}-${attr}`).textContent = value;
     }
 
-    // Save User Profile and Calculate Matches
+    // Save User Profile with Demographics
     function saveProfile() {
         const attributes = {};
         
@@ -535,7 +740,10 @@
             });
         });
         
+        const demographics = getDemographyFromUI();
+        
         userProfile = {
+            demographics,
             attributes,
             timestamp: new Date().toLocaleString('de-DE')
         };
@@ -545,7 +753,7 @@
         alert('✅ Profil gespeichert! Matches berechnet.');
     }
 
-    // Matching Algorithm
+    // Matching Algorithm (mit Demographie-Boost)
     function calculateMatches() {
         if (!userProfile || ads.length === 0) {
             document.getElementById('noProfileState').classList.remove('hidden');
@@ -558,19 +766,17 @@
             return { ...ad, matchScore: score };
         });
 
-        // Sort by match score
         matches.sort((a, b) => b.matchScore - a.matchScore);
-
         displayMatches(matches);
     }
 
-    // Calculate Match Score
     function calculateMatchScore(profile, ad) {
         const weights = CATEGORY_WEIGHTS[ad.category] || { werte: 0.33, emotional: 0.33, aesthetik: 0.34 };
         
         let totalScore = 0;
         let groupScores = {};
         
+        // Berechne Attribut-Ähnlichkeit
         Object.keys(ATTRIBUTES).forEach(group => {
             let groupScore = 0;
             let count = 0;
@@ -579,7 +785,6 @@
                 const userValue = profile.attributes[group][attr];
                 const adValue = ad.analysis.attributes[group][attr].score;
                 
-                // Calculate similarity (0-100)
                 const diff = Math.abs(userValue - adValue);
                 const similarity = 100 - diff;
                 
@@ -595,10 +800,47 @@
                      (groupScores.emotional * weights.emotional) +
                      (groupScores.aesthetik * weights.aesthetik);
         
-        return Math.round(totalScore);
+        // Demographie-Boost (einfache Regeln)
+        let demoBoost = 0;
+        const demo = profile.demographics;
+        const adAttrs = ad.analysis.attributes;
+        
+        // Alter-basiert
+        if (demo.age < 25) {
+            if (adAttrs.aesthetik.dynamisch?.score > 70) demoBoost += 2;
+            if (adAttrs.aesthetik.urban?.score > 70) demoBoost += 2;
+        } else if (demo.age > 50) {
+            if (adAttrs.werte.tradition?.score > 70) demoBoost += 2;
+            if (adAttrs.werte.sicherheit?.score > 70) demoBoost += 2;
+        }
+        
+        // Kinder-basiert
+        if (demo.children > 0) {
+            if (adAttrs.werte.familie?.score > 70) demoBoost += 3;
+            if (adAttrs.werte.sicherheit?.score > 60) demoBoost += 2;
+        }
+        
+        // Einkommen-basiert
+        if (demo.income >= 8) {
+            if (adAttrs.werte.luxus?.score > 70) demoBoost += 3;
+            if (adAttrs.aesthetik.elegant?.score > 70) demoBoost += 2;
+        } else if (demo.income <= 3) {
+            if (adAttrs.werte.pragmatismus?.score > 70) demoBoost += 3;
+        }
+        
+        // Wohnort-basiert
+        if (demo.location === 'grossstadt') {
+            if (adAttrs.aesthetik.urban?.score > 70) demoBoost += 2;
+            if (adAttrs.aesthetik.technologisch?.score > 70) demoBoost += 2;
+        } else if (demo.location === 'land') {
+            if (adAttrs.aesthetik.natuerlich?.score > 70) demoBoost += 2;
+            if (adAttrs.aesthetik.rustikal?.score > 70) demoBoost += 2;
+        }
+        
+        return Math.min(Math.round(totalScore + demoBoost), 100);
     }
 
-    // Display Matches
+    // Display Matches with Rating
     function displayMatches(matches) {
         document.getElementById('noProfileState').classList.add('hidden');
         document.getElementById('matchesSection').classList.remove('hidden');
@@ -614,6 +856,8 @@
             const matchClass = ad.matchScore >= 80 ? 'bg-green-100 text-green-800' : 
                               ad.matchScore >= 60 ? 'bg-blue-100 text-blue-800' : 
                               'bg-gray-100 text-gray-800';
+            
+            const currentRating = userRatings[ad.id] || 0;
             
             return `
                 <div class="border-2 rounded-xl p-4 mb-4">
@@ -636,12 +880,120 @@
                         `).join('')}
                     </div>
                     
-                    <div class="text-xs text-gray-500">
-                        Intensität: ${ad.analysis.intensity} • CTR: ${ad.ctr}
+                    <div class="flex justify-between items-center mt-3 pt-3 border-t">
+                        <div class="text-xs text-gray-500">
+                            Intensität: ${ad.analysis.intensity} • CTR: ${ad.ctr}
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-gray-600">Bewerten:</span>
+                            <div class="star-rating" data-ad-id="${ad.id}">
+                                ${[1,2,3,4,5,6,7,8,9,10].map(star => `
+                                    <span class="star ${star <= currentRating ? 'active' : ''}" onclick="rateAd(${ad.id}, ${star})">★</span>
+                                `).join('')}
+                            </div>
+                            ${currentRating > 0 ? `<span class="text-xs font-bold text-yellow-600">${currentRating}/10</span>` : ''}
+                        </div>
                     </div>
                 </div>
             `;
         }).join('');
+    }
+
+    // Rating System
+    function rateAd(adId, rating) {
+        userRatings[adId] = rating;
+        saveUserRatings();
+        
+        // Update stars visual
+        const stars = document.querySelectorAll(`[data-ad-id="${adId}"] .star`);
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.classList.add('active');
+            } else {
+                star.classList.remove('active');
+            }
+        });
+        
+        // Update rating display
+        calculateMatches();
+    }
+
+    // ML Export Function
+    function exportForML() {
+        if (ads.length === 0) {
+            alert('❌ Keine Daten zum Exportieren!');
+            return;
+        }
+
+        // Flatten attributes for ML
+        function flattenAttributes(attrs) {
+            const flat = [];
+            Object.keys(ATTRIBUTES).forEach(group => {
+                ATTRIBUTES[group].forEach(attr => {
+                    flat.push(attrs[group][attr]?.score || attrs[group][attr] || 0);
+                });
+            });
+            return flat;
+        }
+
+        const mlData = [];
+        
+        ads.forEach(ad => {
+            // Basis-Eintrag (Ad ohne User-Match)
+            const adFeatures = {
+                ad_id: ad.id,
+                brand: ad.brand,
+                category: ad.category,
+                ctr: parseFloat(ad.ctr) || 0,
+                intensity: ad.analysis.intensity,
+                attributes: flattenAttributes(ad.analysis.attributes),
+                dominant_attributes: ad.analysis.dominant_attributes,
+                weak_attributes: ad.analysis.weak_attributes
+            };
+            
+            // Wenn User-Profil existiert, erstelle Match-Daten
+            if (userProfile) {
+                const matchScore = calculateMatchScore(userProfile, ad);
+                const rating = userRatings[ad.id] || null;
+                
+                mlData.push({
+                    // Features
+                    ad_features: adFeatures,
+                    user_demographics: userProfile.demographics,
+                    user_attributes: flattenAttributes(userProfile.attributes),
+                    
+                    // Labels / Targets
+                    calculated_match_score: matchScore,
+                    user_rating: rating,
+                    has_rating: rating !== null,
+                    
+                    // Meta
+                    timestamp: new Date().toISOString(),
+                    category_weights: CATEGORY_WEIGHTS[ad.category]
+                });
+            } else {
+                // Ohne User-Profil: nur Ad-Daten
+                mlData.push({
+                    ad_features: adFeatures,
+                    timestamp: new Date().toISOString()
+                });
+            }
+        });
+
+        // Export als JSON
+        const blob = new Blob([JSON.stringify(mlData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ml_training_data_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        
+        const ratedCount = Object.keys(userRatings).length;
+        alert(`✅ ML-Daten exportiert!\n\n` +
+              `📊 ${ads.length} Werbungen\n` +
+              `⭐ ${ratedCount} Ratings\n` +
+              `👤 ${userProfile ? 'Mit User-Profil' : 'Ohne User-Profil'}\n\n` +
+              `Bereit für TensorFlow.js Training!`);
     }
 
     // Update Matching View
@@ -654,6 +1006,7 @@
         }
     }
 
+    // Fortsetzung Teil 4...
     // AI Analysis
     async function performAiAnalysis() {
         const query = document.getElementById('aiQueryInput').value.trim();
@@ -676,37 +1029,25 @@
         try {
             let response;
             
-            // Versuche Backend
             try {
                 const backendUrl = `${BACKEND_URL}/api/analyze-data`;
-
                 const apiResponse = await fetch(backendUrl, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        query: query,
-                        ads: ads
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: query, ads: ads })
                 });
 
-                if (!apiResponse.ok) {
-                    throw new Error('Backend nicht erreichbar');
-                }
+                if (!apiResponse.ok) throw new Error('Backend nicht erreichbar');
 
                 const data = await apiResponse.json();
-
                 if (data.success && data.analysis) {
                     response = data.analysis;
                 } else {
                     throw new Error('Ungültige Response');
                 }
-
             } catch (apiError) {
                 console.log('Backend Fehler:', apiError.message);
                 
-                // Simple Demo Response
                 const intensityCount = {};
                 ads.forEach(ad => {
                     intensityCount[ad.analysis.intensity] = (intensityCount[ad.analysis.intensity] || 0) + 1;
@@ -717,9 +1058,9 @@
 • Gesamt Werbungen: ${ads.length}
 • Kategorien: ${new Set(ads.map(a => a.category)).size}
 • Intensitäten: ${Object.entries(intensityCount).map(([k,v]) => `${k} (${v})`).join(', ')}
+• User Ratings: ${Object.keys(userRatings).length}
 
-⚠️ Backend nicht erreichbar - stelle sicher dass dein Backend läuft.
-Demo-Daten angezeigt.`;
+⚠️ Backend nicht erreichbar - Demo-Daten angezeigt.`;
             }
 
             document.getElementById('aiResponseText').textContent = response;
@@ -737,18 +1078,22 @@ Demo-Daten angezeigt.`;
     function deleteAd(id) {
         if (confirm('Werbung wirklich löschen?')) {
             ads = ads.filter(ad => ad.id !== id);
+            delete userRatings[id];
             saveAds();
+            saveUserRatings();
         }
     }
 
     // Clear All
     function clearAllData() {
-        if (confirm('ALLE Werbungen löschen?')) {
-            if (confirm('Wirklich sicher?')) {
+        if (confirm('ALLE Werbungen UND Ratings löschen?')) {
+            if (confirm('Wirklich sicher? User-Profil bleibt erhalten.')) {
                 ads = [];
+                userRatings = {};
                 localStorage.removeItem('analyzed_ads_mvp2');
+                localStorage.removeItem('user_ratings_mvp2');
                 updateUI();
-                alert('✅ Alle Daten gelöscht!');
+                alert('✅ Alle Daten gelöscht! Profil bleibt erhalten.');
             }
         }
     }
@@ -775,12 +1120,15 @@ Demo-Daten angezeigt.`;
             <div class="border-2 rounded-xl mb-4 p-4">
                 <h3 class="font-bold text-lg mb-3">${cat} (${catAds.length})</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    ${catAds.map(ad => `
+                    ${catAds.map(ad => {
+                        const rating = userRatings[ad.id];
+                        return `
                         <div class="border-2 rounded-xl p-4">
                             <h3 class="font-bold text-lg">${ad.brand}</h3>
                             <p class="text-sm text-gray-600">${ad.category}</p>
                             <div class="text-xs mt-2">
                                 <span class="font-semibold">Intensität:</span> ${ad.analysis.intensity}
+                                ${rating ? `<br><span class="font-semibold">Rating:</span> ⭐ ${rating}/10` : ''}
                             </div>
                             <div class="flex gap-1 flex-wrap mt-2">
                                 ${ad.analysis.dominant_attributes.slice(0, 3).map(attr => `
@@ -789,7 +1137,7 @@ Demo-Daten angezeigt.`;
                             </div>
                             ${ad.analysis.weak_attributes?.length > 0 ? `
                                 <div class="flex gap-1 flex-wrap mt-2">
-                                    ${ad.analysis.weak_attributes.map(attr => `
+                                    ${ad.analysis.weak_attributes.slice(0,2).map(attr => `
                                         <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">↓${attr}</span>
                                     `).join('')}
                                 </div>
@@ -798,7 +1146,7 @@ Demo-Daten angezeigt.`;
                                 🗑️ Löschen
                             </button>
                         </div>
-                    `).join('')}
+                    `}).join('')}
                 </div>
             </div>
         `).join('');
@@ -810,21 +1158,23 @@ Demo-Daten angezeigt.`;
             document.getElementById('stats-total').textContent = '0';
             document.getElementById('stats-categories').textContent = '0';
             document.getElementById('stats-intensity').textContent = '-';
+            document.getElementById('stats-ml-ready').textContent = '0';
             return;
         }
 
         const categories = new Set(ads.map(ad => ad.category)).size;
-        
-        // Calculate average intensity
         const intensityMap = { 'niedrig': 1, 'mittel': 2, 'hoch': 3 };
         const avgIntensity = ads.reduce((sum, ad) => sum + (intensityMap[ad.analysis.intensity] || 2), 0) / ads.length;
         const intensityLabel = avgIntensity < 1.5 ? 'niedrig' : avgIntensity < 2.5 ? 'mittel' : 'hoch';
+        
+        const ratedCount = Object.keys(userRatings).length;
+        const mlReady = userProfile ? ratedCount : 0;
 
         document.getElementById('stats-total').textContent = ads.length;
         document.getElementById('stats-categories').textContent = categories;
         document.getElementById('stats-intensity').textContent = intensityLabel;
+        document.getElementById('stats-ml-ready').textContent = mlReady;
 
-        // Count dominant attributes
         const attrCount = {};
         ads.forEach(ad => {
             (ad.analysis.dominant_attributes || []).forEach(attr => {
@@ -845,7 +1195,7 @@ Demo-Daten angezeigt.`;
             `).join('')
             : '<p class="text-gray-500 text-sm">Keine Daten</p>';
 
-        // Category Chart
+        // Charts
         const categoryData = {};
         ads.forEach(ad => {
             categoryData[ad.category] = (categoryData[ad.category] || 0) + 1;
@@ -864,13 +1214,10 @@ Demo-Daten angezeigt.`;
             },
             options: {
                 responsive: true,
-                plugins: {
-                    legend: { position: 'bottom' }
-                }
+                plugins: { legend: { position: 'bottom' } }
             }
         });
 
-        // Attributes Chart
         if (attributesChart) attributesChart.destroy();
         const ctxAttr = document.getElementById('attributesChart').getContext('2d');
         attributesChart = new Chart(ctxAttr, {
@@ -885,12 +1232,8 @@ Demo-Daten angezeigt.`;
             },
             options: {
                 responsive: true,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    y: { beginAtZero: true }
-                }
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
             }
         });
     }
@@ -950,6 +1293,8 @@ Demo-Daten angezeigt.`;
     // Update UI
     function updateUI() {
         document.getElementById('adCount').textContent = ads.length;
+        document.getElementById('ratingCount').textContent = Object.keys(userRatings).length;
+        
         if (currentTab === 'list') updateListView();
         else if (currentTab === 'insights') updateInsights();
         else if (currentTab === 'matching') updateMatchingView();
@@ -961,6 +1306,7 @@ Demo-Daten angezeigt.`;
         
         document.getElementById('analyzeBtn').addEventListener('click', analyzeAd);
         document.getElementById('exportBtn').addEventListener('click', exportJSON);
+        document.getElementById('exportMLBtn').addEventListener('click', exportForML);
         document.getElementById('clearBtn').addEventListener('click', clearAllData);
         document.getElementById('importFile').addEventListener('change', importJSON);
         document.getElementById('aiAnalyzeBtn').addEventListener('click', performAiAnalysis);
@@ -973,4 +1319,6 @@ Demo-Daten angezeigt.`;
             btn.addEventListener('click', () => switchTab(btn.dataset.tab));
         });
     });
-</script></body></html>
+</script>
+</body>
+</html>
